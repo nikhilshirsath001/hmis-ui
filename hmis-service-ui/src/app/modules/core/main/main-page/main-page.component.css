@@ -1,0 +1,16 @@
+.main {
+    height: calc(100vh - 75px);
+    overflow: hidden auto;
+    padding: 15px;
+    background-color: #f0f2f2;
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+    width: 0.3rem;
+    height: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgb(194, 191, 191);
+    border-radius: 4px;
+}
