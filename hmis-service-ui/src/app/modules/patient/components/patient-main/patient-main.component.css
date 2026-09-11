@@ -260,18 +260,19 @@
 }
 
 /* JSON Response */
-
 .json-response-card {
-  height: 100%;
-  min-height: 500px;
+  height: 550px; /* or whatever height you want */
+  display: flex;
+  flex-direction: column;
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
   background: #1e1e1e;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* Header stays fixed */
 .json-header {
+  flex-shrink: 0;
   height: 55px;
   padding: 0 16px;
   display: flex;
@@ -281,39 +282,39 @@
   border-bottom: 1px solid #3a3a3a;
 }
 
-.json-status {
-  color: #4ade80;
-  font-weight: 600;
-  margin-right: 12px;
-}
-
-.json-status i {
-  margin-right: 6px;
-}
-
-.status-code {
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-}
-
+/* Only this section scrolls */
 .json-body {
-  padding: 20px;
-  height: calc(100% - 55px);
+  flex: 1;
+  min-height: 0;
   overflow: auto;
+  padding: 20px;
 }
 
+/* JSON formatting */
 .json-body pre {
   margin: 0;
   color: #d4d4d4;
   font-family: 'Consolas', 'Monaco', monospace;
   font-size: 14px;
   line-height: 1.6;
-  white-space: pre-wrap;
+  white-space: pre;
 }
 
-.json-body code {
-  color: #d4d4d4;
+/* Optional scrollbar styling */
+.json-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.json-body::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.json-body::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+.json-body::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }

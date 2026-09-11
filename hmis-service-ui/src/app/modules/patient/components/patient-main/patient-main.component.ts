@@ -29,23 +29,9 @@ export class PatientMainComponent {
   patientForm: FormGroup;
   diagnosysForm!:FormGroup;
   procedureForm!:FormGroup;
-
-  
-
-  isSubmitting = false;
-
   formType:any;
 
-  apiResponse: any = {
-  success: true,
-  message: 'Patient created successfully',
-  data: {
-    patientId: 'PAT-10001',
-    abhaId: '12-3456-7890-1234',
-    status: 'ACTIVE'
-  },
-  timestamp: '2026-09-11T10:30:00'
-};
+  apiResponse: any = null;
 
   selectedFiles: {
     identityDocument: File | null;
@@ -155,7 +141,7 @@ export class PatientMainComponent {
 
     this.patientService.submitDiagnosisForm(diagnosisObj).subscribe({
       next: (response:any) => {
-        this.apiResponse = response.data;
+        this.apiResponse = response;
       },
       error: (error) => {
         this.apiResponse = null;
@@ -173,7 +159,7 @@ onSubmitProcedureForm(){
 
     this.patientService.submitDiagnosisForm(procedureObj).subscribe({
       next: (response:any) => {
-        this.apiResponse = response.data;
+        this.apiResponse = response;
       },
       error: (error) => {
         this.apiResponse = null;
@@ -186,11 +172,7 @@ onSubmitProcedureForm(){
       this.patientForm.markAllAsTouched();
       return;
     }
-
-    this.isSubmitting = true;
-
     const formData = new FormData();
-
     const metadata = {
       abhaId: this.patientForm.get('abhaId')?.value,
     };
@@ -220,10 +202,10 @@ onSubmitProcedureForm(){
 
     this.patientService.submitPatientDocuments(formData).subscribe({
       next: (response) => {
-        this.isSubmitting = false;
+        this.apiResponse= response;
       },
       error: (error) => {
-        this.isSubmitting = false;
+        this.apiResponse= null;
       },
     });
   }
