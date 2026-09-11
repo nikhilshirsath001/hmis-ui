@@ -1,172 +1,325 @@
-<div>
-  <div class="form-page">
-    <div class="form-card">
-      <div class="form-header">
-        <h2>Patient Documents</h2>
-        <p>Please enter the Abha ID and upload the required documents.</p>
+<div class="row">
+  <div class="col-6">
+    <div [ngSwitch]="formType">
+      <div *ngSwitchCase="'create-patient'">
+        <div>
+          <div class="form-card">
+            <div class="form-header">
+              <h2>Patient Documents</h2>
+              <p>Please enter the Abha ID and upload the required documents.</p>
+            </div>
+
+            <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
+              <!-- Patient ID -->
+              <div class="form-group">
+                <label for="abhaId">
+                  Abha ID <span class="required">*</span>
+                </label>
+
+                <input
+                  id="abhaId"
+                  type="text"
+                  pInputText
+                  formControlName="abhaId"
+                  placeholder="Enter Abha ID"
+                  class="full-width"
+                  [class.ng-invalid]="
+                    patientForm.get('abhaId')?.invalid &&
+                    patientForm.get('abhaId')?.touched
+                  "
+                />
+
+                <small
+                  class="error-message"
+                  *ngIf="
+                    patientForm.get('patientId')?.hasError('required') &&
+                    patientForm.get('patientId')?.touched
+                  "
+                >
+                  Patient ID is required.
+                </small>
+              </div>
+
+              <!-- Documents -->
+              <div class="documents-section">
+                <div class="section-title">
+                  <h3>Upload Documents</h3>
+                  <span>PDF, JPG, PNG</span>
+                </div>
+
+                <div class="file-grid">
+                  <!-- File 1 -->
+                  <div class="file-group">
+                    <label>
+                      Identity Document
+                      <span class="required">*</span>
+                    </label>
+
+                    <p-fileUpload
+                      mode="basic"
+                      chooseLabel="Choose File"
+                      chooseIcon="pi pi-upload"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      [maxFileSize]="5000000"
+                      [auto]="false"
+                      [customUpload]="true"
+                      (onSelect)="onFileSelect($event, 'identityDocument')"
+                      (onRemove)="onFileRemove('identityDocument')"
+                    >
+                    </p-fileUpload>
+
+                    <small
+                      *ngIf="selectedFiles.identityDocument"
+                      class="selected-file"
+                    >
+                      <i class="pi pi-file"></i>
+                      {{ selectedFiles.identityDocument.name }}
+                    </small>
+
+                    <small
+                      *ngIf="
+                        patientForm.get('identityDocument')?.invalid &&
+                        patientForm.get('identityDocument')?.touched
+                      "
+                      class="error-message"
+                    >
+                      Identity document is required.
+                    </small>
+                  </div>
+
+                  <!-- File 2 -->
+                  <div class="file-group">
+                    <label>
+                      Medical Report
+                      <span class="required">*</span>
+                    </label>
+
+                    <p-fileUpload
+                      mode="basic"
+                      chooseLabel="Choose File"
+                      chooseIcon="pi pi-upload"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      [maxFileSize]="5000000"
+                      [auto]="false"
+                      [customUpload]="true"
+                      (onSelect)="onFileSelect($event, 'medicalReport')"
+                      (onRemove)="onFileRemove('medicalReport')"
+                    >
+                    </p-fileUpload>
+
+                    <small
+                      *ngIf="selectedFiles.medicalReport"
+                      class="selected-file"
+                    >
+                      <i class="pi pi-file"></i>
+                      {{ selectedFiles.medicalReport.name }}
+                    </small>
+
+                    <small
+                      *ngIf="
+                        patientForm.get('medicalReport')?.invalid &&
+                        patientForm.get('medicalReport')?.touched
+                      "
+                      class="error-message"
+                    >
+                      Medical report is required.
+                    </small>
+                  </div>
+
+                  <!-- File 3 -->
+                  <div class="file-group">
+                    <label>
+                      Other Document
+                      <span class="required">*</span>
+                    </label>
+
+                    <p-fileUpload
+                      mode="basic"
+                      chooseLabel="Choose File"
+                      chooseIcon="pi pi-upload"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      [maxFileSize]="5000000"
+                      [auto]="false"
+                      [customUpload]="true"
+                      (onSelect)="onFileSelect($event, 'otherDocument')"
+                      (onRemove)="onFileRemove('otherDocument')"
+                    >
+                    </p-fileUpload>
+
+                    <small
+                      *ngIf="selectedFiles.otherDocument"
+                      class="selected-file"
+                    >
+                      <i class="pi pi-file"></i>
+                      {{ selectedFiles.otherDocument.name }}
+                    </small>
+
+                    <small
+                      *ngIf="
+                        patientForm.get('otherDocument')?.invalid &&
+                        patientForm.get('otherDocument')?.touched
+                      "
+                      class="error-message"
+                    >
+                      Document is required.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit -->
+              <div class="form-actions">
+                <p-button
+                  type="submit"
+                  label="Submit"
+                  icon="pi pi-check"
+                  [loading]="isSubmitting"
+                >
+                </p-button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
 
-      <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
-        <!-- Patient ID -->
-        <div class="form-group">
-          <label for="abhaId"> Abha ID <span class="required">*</span> </label>
-
-          <input
-            id="abhaId"
-            type="text"
-            pInputText
-            formControlName="abhaId"
-            placeholder="Enter Abha ID"
-            class="full-width"
-            [class.ng-invalid]="
-              patientForm.get('abhaId')?.invalid &&
-              patientForm.get('abhaId')?.touched
-            "
-          />
-
-          <small
-            class="error-message"
-            *ngIf="
-              patientForm.get('patientId')?.hasError('required') &&
-              patientForm.get('patientId')?.touched
-            "
-          >
-            Patient ID is required.
-          </small>
-        </div>
-
-        <!-- Documents -->
-        <div class="documents-section">
-          <div class="section-title">
-            <h3>Upload Documents</h3>
-            <span>PDF, JPG, PNG</span>
-          </div>
-
-          <div class="file-grid">
-            <!-- File 1 -->
-            <div class="file-group">
-              <label>
-                Identity Document
-                <span class="required">*</span>
-              </label>
-
-              <p-fileUpload
-                mode="basic"
-                chooseLabel="Choose File"
-                chooseIcon="pi pi-upload"
-                accept=".pdf,.jpg,.jpeg,.png"
-                [maxFileSize]="5000000"
-                [auto]="false"
-                [customUpload]="true"
-                (onSelect)="onFileSelect($event, 'identityDocument')"
-                (onRemove)="onFileRemove('identityDocument')"
-              >
-              </p-fileUpload>
-
-              <small
-                *ngIf="selectedFiles.identityDocument"
-                class="selected-file"
-              >
-                <i class="pi pi-file"></i>
-                {{ selectedFiles.identityDocument.name }}
-              </small>
-
-              <small
-                *ngIf="
-                  patientForm.get('identityDocument')?.invalid &&
-                  patientForm.get('identityDocument')?.touched
-                "
-                class="error-message"
-              >
-                Identity document is required.
-              </small>
+      <div *ngSwitchCase="'create-diagnosis'">
+        <div>
+          <div class="form-card">
+            <div class="form-header">
+              <h2>Diagnosis Form</h2>
+              <p>Please enter the Patient ID and upload the required documents.</p>
             </div>
+            <form
+              [formGroup]="diagnosysForm"
+              (ngSubmit)="onSubmitDiagnosisForm()"
+            >
+              <!-- Patient ID -->
+              <div class="form-group">
+                <label for="patientId">
+                  Ptient ID <span class="required">*</span>
+                </label>
 
-            <!-- File 2 -->
-            <div class="file-group">
-              <label>
-                Medical Report
-                <span class="required">*</span>
-              </label>
+                <input
+                  id="patientId"
+                  type="text"
+                  pInputText
+                  formControlName="patientId"
+                  placeholder="Enter Patient ID"
+                  class="full-width"
+                  [class.ng-invalid]="
+                    diagnosysForm.get('patientId')?.invalid &&
+                    diagnosysForm.get('patientId')?.touched
+                  "
+                />
 
-              <p-fileUpload
-                mode="basic"
-                chooseLabel="Choose File"
-                chooseIcon="pi pi-upload"
-                accept=".pdf,.jpg,.jpeg,.png"
-                [maxFileSize]="5000000"
-                [auto]="false"
-                [customUpload]="true"
-                (onSelect)="onFileSelect($event, 'medicalReport')"
-                (onRemove)="onFileRemove('medicalReport')"
-              >
-              </p-fileUpload>
-
-              <small *ngIf="selectedFiles.medicalReport" class="selected-file">
-                <i class="pi pi-file"></i>
-                {{ selectedFiles.medicalReport.name }}
-              </small>
-
-              <small
-                *ngIf="
-                  patientForm.get('medicalReport')?.invalid &&
-                  patientForm.get('medicalReport')?.touched
-                "
-                class="error-message"
-              >
-                Medical report is required.
-              </small>
-            </div>
-
-            <!-- File 3 -->
-            <div class="file-group">
-              <label>
-                Other Document
-                <span class="required">*</span>
-              </label>
-
-              <p-fileUpload
-                mode="basic"
-                chooseLabel="Choose File"
-                chooseIcon="pi pi-upload"
-                accept=".pdf,.jpg,.jpeg,.png"
-                [maxFileSize]="5000000"
-                [auto]="false"
-                [customUpload]="true"
-                (onSelect)="onFileSelect($event, 'otherDocument')"
-                (onRemove)="onFileRemove('otherDocument')"
-              >
-              </p-fileUpload>
-
-              <small *ngIf="selectedFiles.otherDocument" class="selected-file">
-                <i class="pi pi-file"></i>
-                {{ selectedFiles.otherDocument.name }}
-              </small>
-
-              <small
-                *ngIf="
-                  patientForm.get('otherDocument')?.invalid &&
-                  patientForm.get('otherDocument')?.touched
-                "
-                class="error-message"
-              >
-                Document is required.
-              </small>
-            </div>
+                <small
+                  class="error-message"
+                  *ngIf="
+                    diagnosysForm.get('patientId')?.hasError('required') &&
+                    diagnosysForm.get('patientId')?.touched
+                  "
+                >
+                  Patient ID is required.
+                </small>
+              </div>
+              <!-- Submit -->
+              <div class="form-actions">
+                <p-button
+                  type="submit"
+                  label="Submit"
+                  icon="pi pi-check"
+                  [loading]="isSubmitting"
+                >
+                </p-button>
+              </div>
+            </form>
           </div>
         </div>
+      </div>
 
-        <!-- Submit -->
-        <div class="form-actions">
-          <p-button
-            type="submit"
-            label="Submit"
-            icon="pi pi-check"
-            [loading]="isSubmitting"
-          >
-          </p-button>
+      <div *ngSwitchCase="'create-procedure'">
+         <div>
+          <div class="form-card">
+            <div class="form-header">
+              <h2>Procedure Form</h2>
+              <p>Please enter the Patient ID and upload the required documents.</p>
+            </div>
+            <form
+              [formGroup]="procedureForm"
+              (ngSubmit)="onSubmitProcedureForm()"
+            >
+              <!-- Patient ID -->
+              <div class="form-group">
+                <label for="patientId">
+                  Ptient ID <span class="required">*</span>
+                </label>
+
+                <input
+                  id="patientId"
+                  type="text"
+                  pInputText
+                  formControlName="patientId"
+                  placeholder="Enter Patient ID"
+                  class="full-width"
+                  [class.ng-invalid]="
+                    procedureForm.get('patientId')?.invalid &&
+                    procedureForm.get('patientId')?.touched
+                  "
+                />
+
+                <small
+                  class="error-message"
+                  *ngIf="
+                    procedureForm.get('patientId')?.hasError('required') &&
+                    procedureForm.get('patientId')?.touched
+                  "
+                >
+                  Patient ID is required.
+                </small>
+              </div>
+              <!-- Submit -->
+              <div class="form-actions">
+                <p-button
+                  type="submit"
+                  label="Submit"
+                  icon="pi pi-check"
+                  [loading]="isSubmitting"
+                >
+                </p-button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="json-response-card">
+      <!-- Header -->
+      <div class="json-header">
+        <div>
+          <span class="json-status">
+            <i class="pi pi-check-circle"></i>
+            Response
+          </span>
+          <span class="status-code">200 OK</span>
+        </div>
+
+        <p-button
+          label="Copy"
+          icon="pi pi-copy"
+          severity="secondary"
+          size="small"
+          (onClick)="copyResponse()"
+        ></p-button>
+      </div>
+
+      <!-- JSON Body -->
+      <div class="json-body">
+        <pre
+          *ngIf="apiResponse != null"
+        ><code>{{ apiResponse | json }}</code></pre>
+      </div>
     </div>
   </div>
 </div>

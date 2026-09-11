@@ -7,10 +7,18 @@ export const routes: Routes = [
     path: '',
     component: MainPageComponent,
     children:[
-         {
-        path: 'patient/create',
+        {
+        path: 'patient/:formType',
         component: PatientMainComponent
-        }
+        },
+        // {
+        // path: 'patient/create-patient',
+        // component: PatientMainComponent
+        // },
+        // {
+        // path: 'patient/create-patient',
+        // component: PatientMainComponent
+        // }
     ]
     }
 ];
