@@ -141,7 +141,17 @@ ngOnInit() {
 
     {
       label: 'Claim',
-      icon: 'pi pi-envelope'
+      icon: 'pi pi-envelope',
+       items: [
+        {
+          label: 'Create Patient',
+          icon: 'pi pi-user-plus',
+          routeParam: 'create-create-doctor',
+          command: () => {
+            this.router.navigate(['/claim/', 'create-doctor']);
+          }
+        }
+      ]
     },
 
     {

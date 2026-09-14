@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
   FormGroup,
   Validators,
+  FormsModule,
 } from '@angular/forms';
 
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,6 +13,8 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ButtonModule } from 'primeng/button';
 import { PatientService } from '../../services/patient.service';
 import { ActivatedRoute } from '@angular/router';
+import { ApiCallerComponent } from '../../../../common/reusable-component/api-caller/api-caller.component';
+import { GetApiDefinition } from '../../../../models/get-api-definition';
 @Component({
   standalone: true,
   selector: 'app-patient-main',
@@ -21,6 +24,8 @@ import { ActivatedRoute } from '@angular/router';
     ReactiveFormsModule,
     InputTextModule,
     FileUploadModule,
+    ApiCallerComponent,
+    FormsModule
   ],
   templateUrl: './patient-main.component.html',
   styleUrl: './patient-main.component.css',
@@ -29,8 +34,18 @@ export class PatientMainComponent {
   patientForm: FormGroup;
   diagnosysForm!:FormGroup;
   procedureForm!:FormGroup;
+
+  apiCallForm!: FormGroup;
+
   formType:any;
 
+  @ViewChild(ApiCallerComponent)
+  apiCaller!: ApiCallerComponent;
+
+  selectedApi!: GetApiDefinition;
+  apiParams: Record<string, any> = {};
+  // apiError:any;
+apiUrl = '';
   apiResponse: any = null;
 
   selectedFiles: {
@@ -43,11 +58,77 @@ export class PatientMainComponent {
     otherDocument: null,
   };
 
+  getApis: GetApiDefinition[] = [
+
+  {
+    name: 'Eligibility Status',
+    description: 'Check patient eligibility',
+    url: 'http://localhost:8081/api/eligibility/status',
+
+    parameters: [
+      {
+        name: 'abdmId',
+        label: 'ABDM ID',
+        placeholder: 'Enter ABDM ID',
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: 'Get Patient',
+    description: 'Get patient details',
+    url: 'http://localhost:8081/api/hmis/patient',
+
+    parameters: [
+      {
+        name: 'abhaId',
+        label: 'ABHA ID',
+        placeholder: 'Enter ABHA ID',
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: 'Patient Contact',
+    description: 'Get patient contact information',
+    url: 'http://localhost:8081/api/hmis/patient/contact',
+
+    parameters: [
+      {
+        name: 'abhaId',
+        label: 'ABHA ID',
+        placeholder: 'Enter ABHA ID',
+        required: true
+      }
+    ]
+  },
+
+  {
+    name: 'Patient Diagnosis',
+    description: 'Get patient diagnosis',
+    url: 'http://localhost:8081/api/diagnosis',
+
+    parameters: [
+      {
+        name: 'patientId',
+        label: 'Patient ID',
+        placeholder: 'Enter Patient ID',
+        required: true
+      }
+    ]
+  }
+
+];
+
   constructor(
     private fb: FormBuilder,
     private patientService: PatientService,
     private route: ActivatedRoute
   ) {
+    this.apiCallForm =this.fb.group({abhaId: ['', [Validators.required]]});
+
     this.patientForm = this.fb.group({
       abhaId: ['', [Validators.required]],
 
@@ -65,6 +146,88 @@ export class PatientMainComponent {
       this.formType = params.get('formType') || '';
       this.loadForm();
     });
+  }
+
+selectApi(api: GetApiDefinition): void {
+
+  this.selectedApi = api;
+
+  this.apiParams = {};
+
+  this.apiResponse = null;
+
+  this.apiError = null;
+
+  // Initialize parameters
+  api.parameters.forEach(param => {
+
+    this.apiParams[param.name] = '';
+
+  });
+}
+
+
+  apiError: any = null;
+
+
+  apiLoading = false;
+
+
+executeApi(): void {
+
+  if (!this.selectedApi) {
+    return;
+  }
+
+  // Validate parameters
+  for (const parameter of this.selectedApi.parameters) {
+
+    const value = this.apiParams[parameter.name];
+
+    if (
+      parameter.required &&
+      (!value || value.toString().trim() === '')
+    ) {
+
+      console.error(
+        `${parameter.label} is required`
+      );
+
+      return;
+    }
+
+  }
+
+  // Give URL to reusable component
+  this.apiUrl = this.selectedApi.url;
+
+  // Give parameters to reusable component
+  this.apiCaller.callApi();
+}
+
+
+  onApiResponse(response: any): void {
+
+    console.log('API Response:', response);
+
+    this.apiResponse = response;
+
+  }
+
+
+  onApiError(error: any): void {
+
+    console.error('API Error:', error);
+
+    this.apiError = error;
+
+  }
+
+
+  onLoadingChange(loading: boolean): void {
+
+    this.apiLoading = loading;
+
   }
 
   loadForm(): void {

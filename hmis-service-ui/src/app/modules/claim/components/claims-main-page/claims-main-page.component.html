@@ -1,0 +1,327 @@
+
+<div class="api-explorer">
+
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="page-icon">
+        <i class="pi pi-code"></i>
+      </div>
+
+      <div>
+        <h2>Patient API Explorer</h2>
+        <p>
+          Select an API, provide the required parameters and execute the request.
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="api-selection-card">
+
+    <div class="section-header">
+      <div>
+        <h3>
+          <i class="pi pi-list"></i>
+          Available APIs
+        </h3>
+
+        <p>Select an API to view its parameters.</p>
+      </div>
+
+      <span class="api-count">
+        {{ getApis.length }} APIs
+      </span>
+    </div>
+
+
+    <div class="api-list">
+
+      <button
+        type="button"
+        class="api-item"
+        *ngFor="let api of getApis"
+        [class.active]="selectedApi?.name === api.name"
+        (click)="selectApi(api)"
+      >
+
+        <span class="api-method get">
+          GET
+        </span>
+
+        <span class="api-info">
+          <strong>{{ api.name }}</strong>
+
+          <small *ngIf="api.description">
+            {{ api.description }}
+          </small>
+        </span>
+
+        <i class="pi pi-chevron-right api-arrow"></i>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <div
+    class="api-workspace"
+    *ngIf="selectedApi"
+  >
+
+
+    <div class="request-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-title">
+
+          <span class="panel-icon request-icon">
+            <i class="pi pi-send"></i>
+          </span>
+
+          <div>
+            <h3>Request</h3>
+            <span>Configure API parameters</span>
+          </div>
+
+        </div>
+
+        <span class="method-badge get">
+          GET
+        </span>
+
+      </div>
+
+
+
+      <div class="endpoint-box">
+
+        <span class="endpoint-method">
+          GET
+        </span>
+
+        <code>
+          {{ selectedApi.url }}
+        </code>
+
+      </div>
+
+
+
+      <div
+        class="api-description"
+        *ngIf="selectedApi.description"
+      >
+        <i class="pi pi-info-circle"></i>
+
+        <span>
+          {{ selectedApi.description }}
+        </span>
+      </div>
+
+
+
+      <div class="parameters-section">
+
+        <div class="parameters-header">
+
+          <div>
+            <h4>Parameters</h4>
+            <span>
+              Enter the values required by this API.
+            </span>
+          </div>
+
+          <i class="pi pi-sliders-h"></i>
+
+        </div>
+
+
+        <div
+          class="form-group"
+          *ngFor="let parameter of selectedApi.parameters"
+        >
+
+          <label [for]="parameter.name">
+
+            {{ parameter.label }}
+
+            <span
+              *ngIf="parameter.required"
+              class="required"
+            >
+              *
+            </span>
+
+          </label>
+
+
+          <div class="input-wrapper">
+
+            <i class="pi pi-pencil"></i>
+
+            <input
+              pInputText
+              [id]="parameter.name"
+              type="text"
+              [placeholder]="
+                parameter.placeholder || 'Enter ' + parameter.label
+              "
+              [(ngModel)]="apiParams[parameter.name]"
+              class="full-width"
+            />
+
+          </div>
+
+
+          <small
+            class="parameter-location"
+          >
+            <i class="pi pi-link"></i>
+
+
+          </small>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="request-actions">
+
+        <p-button
+          label="Execute Request"
+          icon="pi pi-play"
+          [loading]="apiLoading"
+          (onClick)="executeApi()"
+        >
+        </p-button>
+
+        <button
+          type="button"
+          class="clear-button"
+          (click)="apiParams = {}"
+        >
+          <i class="pi pi-refresh"></i>
+          Clear
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="response-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-title">
+
+          <span class="panel-icon response-icon">
+            <i class="pi pi-reply"></i>
+          </span>
+
+          <div>
+            <h3>Response</h3>
+            <span>API response data</span>
+          </div>
+
+        </div>
+
+
+        <div class="response-actions">
+
+          <span
+            class="status-code"
+            [class.error]="apiError"
+          >
+            <i
+              class="pi"
+              [ngClass]="
+                apiError
+                  ? 'pi-times-circle'
+                  : 'pi-check-circle'
+              "
+            ></i>
+
+            {{ apiError ? 'Error' : '200 OK' }}
+          </span>
+
+
+          <p-button
+            label="Copy"
+            icon="pi pi-copy"
+            severity="secondary"
+            size="small"
+            [disabled]="apiResponse == null"
+            (onClick)="copyResponse()"
+          >
+          </p-button>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="json-response">
+
+        <div
+          class="empty-response"
+          *ngIf="apiResponse == null && !apiLoading"
+        >
+
+          <i class="pi pi-code"></i>
+
+          <h4>No response yet</h4>
+
+          <p>
+            Execute an API request to see the response here.
+          </p>
+
+        </div>
+
+
+        <div
+          class="loading-response"
+          *ngIf="apiLoading"
+        >
+
+          <i class="pi pi-spin pi-spinner"></i>
+
+          <span>
+            Calling API...
+          </span>
+
+        </div>
+
+
+        <pre
+          *ngIf="apiResponse != null && !apiLoading"
+        ><code>{{ apiResponse | json }}</code></pre>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <app-api-caller
+    [apiUrl]="apiUrl"
+    [params]="apiParams"
+    (apiResponse)="onApiResponse($event)"
+    (apiError)="onApiError($event)"
+    (loadingChange)="onLoadingChange($event)"
+  >
+  </app-api-caller>
+
+</div>

@@ -1,0 +1,214 @@
+import { Component, ViewChild } from '@angular/core';
+import { ApiCallerComponent } from '../../../../common/reusable-component/api-caller/api-caller.component';
+import { GetApiDefinition } from '../../../../models/get-api-definition';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ClaimService } from '../../services/claim.service';
+import { ActivatedRoute } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { CommonModule } from '@angular/common';
+import { InputTextModule } from 'primeng/inputtext';
+
+@Component({
+  selector: 'app-claims-main-page',
+  imports: [
+    ApiCallerComponent,
+    ButtonModule,
+    CommonModule,
+    InputTextModule,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
+  templateUrl: './claims-main-page.component.html',
+  styleUrl: './claims-main-page.component.css',
+})
+export class ClaimsMainPageComponent {
+  apiCallForm!: FormGroup;
+
+  @ViewChild(ApiCallerComponent)
+  apiCaller!: ApiCallerComponent;
+
+  selectedApi!: GetApiDefinition;
+  apiParams: Record<string, any> = {};
+  // apiError:any;
+  apiUrl = '';
+  apiResponse: any = null;
+  formType: any;
+
+  getApis: GetApiDefinition[] = [
+    {
+      name: 'Eligibility Status',
+      description: 'Check patient eligibility',
+      url: 'http://localhost:8081/api/eligibility/status',
+
+      parameters: [
+        {
+          name: 'abdmId',
+          label: 'ABDM ID',
+          placeholder: 'Enter ABDM ID',
+          required: true,
+        },
+      ],
+    },
+
+    {
+      name: 'Get Patient',
+      description: 'Get patient details',
+      url: 'http://localhost:8081/api/hmis/patient',
+
+      parameters: [
+        {
+          name: 'abhaId',
+          label: 'ABHA ID',
+          placeholder: 'Enter ABHA ID',
+          required: true,
+        },
+      ],
+    },
+
+    {
+      name: 'Patient Contact',
+      description: 'Get patient contact information',
+      url: 'http://localhost:8081/api/hmis/patient/contact',
+
+      parameters: [
+        {
+          name: 'abhaId',
+          label: 'ABHA ID',
+          placeholder: 'Enter ABHA ID',
+          required: true,
+        },
+      ],
+    },
+
+    {
+      name: 'Patient Diagnosis',
+      description: 'Get patient diagnosis',
+      url: 'http://localhost:8081/api/diagnosis',
+
+      parameters: [
+        {
+          name: 'patientId',
+          label: 'Patient ID',
+          placeholder: 'Enter Patient ID',
+          required: true,
+        },
+      ],
+    },
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private claimService: ClaimService,
+    private route: ActivatedRoute,
+  ) {
+    this.apiCallForm = this.fb.group({ abhaId: ['', [Validators.required]] });
+
+    // this.patientForm = this.fb.group({
+    //   abhaId: ['', [Validators.required]],
+
+    //   identityDocument: [null, [Validators.required]],
+
+    //   medicalReport: [null, [Validators.required]],
+
+    //   otherDocument: [null, [Validators.required]],
+    // });
+  }
+
+  ngOnInit(): void {
+    // this.apiResponse=null;
+    this.route.paramMap.subscribe((params) => {
+      this.formType = params.get('formType') || '';
+      this.loadForm();
+    });
+  }
+
+  selectApi(api: GetApiDefinition): void {
+    this.selectedApi = api;
+
+    this.apiParams = {};
+
+    this.apiResponse = null;
+
+    this.apiError = null;
+
+    // Initialize parameters
+    api.parameters.forEach((param) => {
+      this.apiParams[param.name] = '';
+    });
+  }
+
+  apiError: any = null;
+
+  apiLoading = false;
+
+  executeApi(): void {
+    if (!this.selectedApi) {
+      return;
+    }
+
+    // Validate parameters
+    for (const parameter of this.selectedApi.parameters) {
+      const value = this.apiParams[parameter.name];
+
+      if (parameter.required && (!value || value.toString().trim() === '')) {
+        console.error(`${parameter.label} is required`);
+
+        return;
+      }
+    }
+
+    // Give URL to reusable component
+    this.apiUrl = this.selectedApi.url;
+
+    // Give parameters to reusable component
+    this.apiCaller.callApi();
+  }
+
+  onApiResponse(response: any): void {
+    console.log('API Response:', response);
+
+    this.apiResponse = response;
+  }
+
+  onApiError(error: any): void {
+    console.error('API Error:', error);
+
+    this.apiError = error;
+  }
+
+  onLoadingChange(loading: boolean): void {
+    this.apiLoading = loading;
+  }
+
+  loadForm(): void {
+    // switch (this.formType) {
+    //   case 'create-patient':
+    //     // Create patient form
+    //     break;
+    //   case 'create-diagnosis':
+    //     // Create diagnosis form
+    //      this.diagnosysForm = this.fb.group({patientId: ['', [Validators.required]],});
+    //     break;
+    //   case 'create-procedure':
+    //      this.procedureForm = this.fb.group({patientId: ['', [Validators.required]],});
+    //     break;
+    //   default:
+    //     console.error('Unknown form type:', this.formType);
+    //     break;
+    // }
+  }
+
+  copyResponse(): void {
+    const json = JSON.stringify(this.apiResponse, null, 2);
+
+    navigator.clipboard.writeText(json).then(() => {
+      console.log('Response copied');
+    });
+  }
+}
