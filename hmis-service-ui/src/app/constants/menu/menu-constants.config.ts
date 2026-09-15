@@ -9,27 +9,10 @@ export const MENU_ITEMS : MenuItem[] = [
   },
 
   {
-    label: 'Insurance Plan',
+    label: 'Policy',
     icon: 'pi pi-shield',
-    items: [
-      {
-        label: 'Create Insurance Plan',
-        icon: 'pi pi-plus-circle',
-        routerLink: ['/insurance/form', 'insurance-plan']
-      },
-      {
-        label: 'Blocks',
-        icon: 'pi pi-th-large'
-      },
-      {
-        label: 'UI Kit',
-        icon: 'pi pi-sliders-h'
-      },
-      {
-        label: 'Templates',
-        icon: 'pi pi-file'
-      }
-    ]
+    routerLink: ['/policy', 'create-policy']
+
   },
 
   {
@@ -57,77 +40,26 @@ export const MENU_ITEMS : MenuItem[] = [
   {
     label: 'Eligibility',
     icon: 'pi pi-check-circle',
-    items: [
-      {
-        label: 'Check Eligibility',
-        icon: 'pi pi-search'
-      },
-      {
-        label: 'Components',
-        icon: 'pi pi-bolt'
-      },
-      {
-        label: 'Blocks',
-        icon: 'pi pi-th-large'
-      },
-      {
-        label: 'UI Kit',
-        icon: 'pi pi-sliders-h'
-      }
-    ]
+    routerLink: ['/eligiblity', 'create-eligiblity']
   },
 
   {
     label: 'Pre Auth',
     icon: 'pi pi-file-check',
-    items: [
-      {
-        label: 'Doctor',
-        icon: 'pi pi-user'
-      },
-      {
-        label: 'Diagnosis',
-        icon: 'pi pi-heart'
-      },
-      {
-        label: 'Procedure',
-        icon: 'pi pi-list-check'
-      },
-      {
-        label: 'Billing',
-        icon: 'pi pi-wallet'
-      }
-    ]
+    routerLink: ['/pre-auth', 'create-pre-auth']
   },
 
-  {
-    label: 'Claim',
-    icon: 'pi pi-file-edit',
-    items: [
-      {
-        label: 'Create Claim',
-        icon: 'pi pi-plus-circle',
-        routerLink: ['/claim', 'create-claim']
-      }
-    ]
-  },
 
   {
     label: 'Billing',
     icon: 'pi pi-wallet',
-    routerLink: ['/billing']
-  },
-
-  {
-    label: 'Pre Assessment',
-    icon: 'pi pi-clipboard',
-    routerLink: ['/pre-assessment']
+    routerLink: ['/billing', 'create-bill']
   },
 
   {
     label: 'Users',
     icon: 'pi pi-users',
-    routerLink: ['/users']
+    routerLink: ['/user', 'create-user']
   }
 
 ];
