@@ -66,6 +66,49 @@
 
   </div>
 
+  <!-- ========================================= -->
+  <!-- POST API SELECTION -->
+  <!-- ========================================= -->
+
+  <div class="api-selection-card">
+    <div class="section-header">
+      <div>
+        <h3>
+          <i class="pi pi-send"></i>
+
+          Create / POST APIs
+        </h3>
+
+        <p>Select an API and provide the request body.</p>
+      </div>
+
+      <span class="api-count"> {{ postApis.length }} APIs </span>
+    </div>
+
+    <div class="api-list">
+      <button
+        type="button"
+        class="api-item"
+        *ngFor="let api of postApis"
+        [class.active]="selectedPostApi?.name === api.name"
+        (click)="selectPostApi(api)"
+      >
+        <span class="api-method post"> POST </span>
+
+        <span class="api-info">
+          <strong>
+            {{ api.name }}
+          </strong>
+
+          <small *ngIf="api.description">
+            {{ api.description }}
+          </small>
+        </span>
+
+        <i class="pi pi-chevron-right api-arrow"> </i>
+      </button>
+    </div>
+  </div>
 
 
   <div
@@ -313,7 +356,204 @@
 
   </div>
 
+  <!-- ========================================= -->
+  <!-- POST WORKSPACE -->
+  <!-- ========================================= -->
 
+  <div class="api-workspace" *ngIf="selectedPostApi">
+    <!-- ================= REQUEST ================= -->
+
+    <div class="request-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon request-icon">
+            <i class="pi pi-send"></i>
+          </span>
+
+          <div>
+            <h3>Create Request</h3>
+
+            <span> Enter request body </span>
+          </div>
+        </div>
+
+        <span class="method-badge post"> POST </span>
+      </div>
+
+      <!-- ENDPOINT -->
+
+      <div class="endpoint-box">
+        <span class="endpoint-method"> POST </span>
+
+        <code>
+          {{ selectedPostApi.url }}
+        </code>
+      </div>
+
+      <!-- DESCRIPTION -->
+
+      <div class="api-description" *ngIf="selectedPostApi.description">
+        <i class="pi pi-info-circle"></i>
+
+        <span>
+          {{ selectedPostApi.description }}
+        </span>
+      </div>
+
+      <!-- REQUEST BODY -->
+
+      <div class="parameters-section">
+        <div class="parameters-header">
+          <div>
+            <h4>Request Body</h4>
+
+            <span> Enter the values required by this API. </span>
+          </div>
+
+          <i class="pi pi-file-edit"></i>
+        </div>
+
+        <!-- DYNAMIC FIELDS -->
+
+        <div class="form-group" *ngFor="let field of selectedPostApi.fields">
+          <label [for]="field.name">
+            {{ field.label }}
+
+            <span *ngIf="field.required" class="required"> * </span>
+          </label>
+
+          <!-- TEXT / NUMBER / DATE -->
+
+          <div
+            class="input-wrapper"
+            *ngIf="
+              field.type === 'text' ||
+              field.type === 'number' ||
+              field.type === 'date'
+            "
+          >
+            <i class="pi pi-pencil"></i>
+
+            <input
+              pInputText
+              [id]="field.name"
+              [type]="field.type"
+              [placeholder]="field.placeholder || 'Enter ' + field.label"
+              [(ngModel)]="postBody[field.name]"
+              class="full-width"
+            />
+          </div>
+
+          <!-- TEXTAREA -->
+
+          <textarea
+            *ngIf="field.type === 'textarea'"
+            pInputTextarea
+            [id]="field.name"
+            [placeholder]="field.placeholder || 'Enter ' + field.label"
+            [(ngModel)]="postBody[field.name]"
+            rows="4"
+            class="full-width"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+
+      <div class="request-actions">
+        <p-button
+          label="Execute Request"
+          icon="pi pi-play"
+          [loading]="apiLoading"
+          (onClick)="executePostApi()"
+        >
+        </p-button>
+
+        <button type="button" class="clear-button" (click)="clearRequest()">
+          <i class="pi pi-refresh"></i>
+
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= RESPONSE ================= -->
+
+    <div class="response-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon response-icon">
+            <i class="pi pi-reply"></i>
+          </span>
+
+          <div>
+            <h3>Response</h3>
+
+            <span> API response data </span>
+          </div>
+        </div>
+
+        <div class="response-actions">
+          <span class="status-code" [class.error]="apiError">
+            <i
+              class="pi"
+              [ngClass]="apiError ? 'pi-times-circle' : 'pi-check-circle'"
+            ></i>
+
+            {{ apiError ? "Error" : "200 OK" }}
+          </span>
+
+          <p-button
+            label="Copy"
+            icon="pi pi-copy"
+            severity="secondary"
+            size="small"
+            [disabled]="apiResponse == null"
+            (onClick)="copyResponse()"
+          >
+          </p-button>
+        </div>
+      </div>
+
+      <!-- RESPONSE BODY -->
+
+      <div class="json-response">
+        <!-- EMPTY -->
+
+        <div
+          class="empty-response"
+          *ngIf="apiResponse == null && !apiLoading && !apiError"
+        >
+          <i class="pi pi-code"></i>
+
+          <h4>No response yet</h4>
+
+          <p>Execute an API request to see the response here.</p>
+        </div>
+
+        <!-- LOADING -->
+
+        <div class="loading-response" *ngIf="apiLoading">
+          <i class="pi pi-spin pi-spinner"></i>
+
+          <span> Calling API... </span>
+        </div>
+
+        <!-- RESPONSE -->
+
+        <pre
+          *ngIf="apiResponse != null && !apiLoading"
+        ><code>{{ apiResponse | json }}</code></pre>
+
+        <!-- ERROR -->
+
+        <pre
+          class="error-response"
+          *ngIf="apiError && !apiLoading"
+        ><code>{{ apiError | json }}</code></pre>
+      </div>
+    </div>
+  </div>
 
 <app-api-caller
   (apiResponse)="onApiResponse($event)"
@@ -322,4 +562,10 @@
 >
 </app-api-caller>
 
+  <app-post-api-caller
+    (apiResponse)="onPostApiResponse($event)"
+    (apiError)="onPostApiError($event)"
+    (loadingChange)="onPostLoadingChange($event)"
+  >
+  </app-post-api-caller>
 </div>

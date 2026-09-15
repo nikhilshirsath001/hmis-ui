@@ -10,151 +10,341 @@ import { EligiblityService } from '../../../eligiblity/services/eligiblity.servi
 import { ActivatedRoute } from '@angular/router';
 import { BillingService } from '../../services/billing.service';
 import { BILLING_GET_APIS } from '../../../../constants/apis-configs/billing-api.config';
+import { PostApiCallerComponent } from '../../../../common/reusable-component/api-caller/post-api-caller/post-api-caller.component';
+import { PostApiDefinition } from '../../../../constants/apis-configs/post/post-policy-api.config';
+import { BILLING_POST_APIS } from '../../../../constants/apis-configs/post/post-billing-api.config';
 @Component({
   selector: 'app-billing-main-page',
-  imports: [ 
+  imports: [
     ApiCallerComponent,
     ButtonModule,
     CommonModule,
     InputTextModule,
     FormsModule,
-    ReactiveFormsModule,],
+    ReactiveFormsModule,
+    PostApiCallerComponent
+],
   templateUrl: './billing-main-page.component.html',
   styleUrl: './billing-main-page.component.css'
 })
 export class BillingMainPageComponent {
- apiCallForm!: FormGroup;
-
   @ViewChild(ApiCallerComponent)
-  apiCaller!: ApiCallerComponent;
-
-  selectedApi!: GetApiDefinition;
-  apiParams: Record<string, any> = {};
-  // apiError:any;
-  apiUrl = '';
-  apiResponse: any = null;
-  formType: any;
-
-  getApis= BILLING_GET_APIS;
-
-  constructor(
-    private fb: FormBuilder,
-    private billingService: BillingService,
-    private route: ActivatedRoute,
-  ) {
-    this.apiCallForm = this.fb.group({ abhaId: ['', [Validators.required]] });
-
-    // this.patientForm = this.fb.group({
-    //   abhaId: ['', [Validators.required]],
-
-    //   identityDocument: [null, [Validators.required]],
-
-    //   medicalReport: [null, [Validators.required]],
-
-    //   otherDocument: [null, [Validators.required]],
-    // });
-  }
-
-  ngOnInit(): void {
-    // this.apiResponse=null;
-    this.route.paramMap.subscribe((params) => {
-      this.formType = params.get('formType') || '';
-      this.loadForm();
-    });
-  }
-
-  selectApi(api: GetApiDefinition): void {
-    this.selectedApi = api;
-
-    this.apiParams = {};
-
-    this.apiResponse = null;
-
-    this.apiError = null;
-
-    // Initialize parameters
-    api.parameters.forEach((param) => {
-      this.apiParams[param.name] = '';
-    });
-  }
-
-  apiError: any = null;
-
-  apiLoading = false;
-
-
-    executeApi(): void {
-
-  if (!this.selectedApi) {
-    return;
-  }
-
-  // Validate parameters
-  for (const parameter of this.selectedApi.parameters) {
-
-    const value = this.apiParams[parameter.name];
-
-    if (
-      parameter.required &&
-      (!value || value.toString().trim() === '')
-    ) {
-
-      console.error(`${parameter.label} is required`);
-
-      return;
-    }
-  }
-
-  // Clear previous response
-  this.apiResponse = null;
-  this.apiError = null;
-
-  // Execute API
-  this.apiCaller.execute({
-    url: this.selectedApi.url,
-    params: this.apiParams
-  });
-}
-
-  onApiResponse(response: any): void {
-    console.log('API Response:', response);
-
-    this.apiResponse = response;
-  }
-
-  onApiError(error: any): void {
-    console.error('API Error:', error);
-
-    this.apiError = error;
-  }
-
-  onLoadingChange(loading: boolean): void {
-    this.apiLoading = loading;
-  }
-
-  loadForm(): void {
-    // switch (this.formType) {
-    //   case 'create-patient':
-    //     // Create patient form
-    //     break;
-    //   case 'create-diagnosis':
-    //     // Create diagnosis form
-    //      this.diagnosysForm = this.fb.group({patientId: ['', [Validators.required]],});
-    //     break;
-    //   case 'create-procedure':
-    //      this.procedureForm = this.fb.group({patientId: ['', [Validators.required]],});
-    //     break;
-    //   default:
-    //     console.error('Unknown form type:', this.formType);
-    //     break;
-    // }
-  }
-
-  copyResponse(): void {
-    const json = JSON.stringify(this.apiResponse, null, 2);
-
-    navigator.clipboard.writeText(json).then(() => {
-      console.log('Response copied');
-    });
-  }
-}
+   apiCaller!: ApiCallerComponent;
+ 
+   @ViewChild(PostApiCallerComponent)
+   postApiCaller!: PostApiCallerComponent;
+ 
+ 
+   // ============================
+   // GET API
+   // ============================
+ 
+   getApis = BILLING_GET_APIS;
+ 
+   selectedApi!: GetApiDefinition;
+ 
+   apiParams: Record<string, any> = {};
+ 
+ 
+   // ============================
+   // POST API
+   // ============================
+ 
+   postApis = BILLING_POST_APIS;
+ 
+   selectedPostApi!: PostApiDefinition;
+ 
+   postBody: Record<string, any> = {};
+ 
+ 
+   // ============================
+   // COMMON RESPONSE
+   // ============================
+ 
+   apiResponse: any = null;
+ 
+   apiError: any = null;
+ 
+   apiLoading = false;
+ 
+ 
+   formType: any;
+ 
+ 
+   constructor(
+     private fb: FormBuilder,
+     private route: ActivatedRoute
+   ) {}
+ 
+ 
+   ngOnInit(): void {
+ 
+     this.route.paramMap.subscribe((params) => {
+ 
+       this.formType = params.get('formType') || '';
+ 
+     });
+ 
+   }
+ 
+ 
+   // =====================================================
+   // GET API
+   // =====================================================
+ 
+   selectApi(api: GetApiDefinition): void {
+ 
+     this.selectedApi = api;
+ 
+     this.selectedPostApi = undefined as any;
+ 
+     this.apiParams = {};
+ 
+     this.postBody = {};
+ 
+     this.apiResponse = null;
+ 
+     this.apiError = null;
+ 
+ 
+     // Initialize GET parameters
+     api.parameters.forEach((param) => {
+ 
+       this.apiParams[param.name] = '';
+ 
+     });
+ 
+   }
+ 
+ 
+   executeApi(): void {
+ 
+     if (!this.selectedApi) {
+       return;
+     }
+ 
+ 
+     // Validate GET parameters
+     for (const parameter of this.selectedApi.parameters) {
+ 
+       const value = this.apiParams[parameter.name];
+ 
+       if (
+         parameter.required &&
+         (!value || value.toString().trim() === '')
+       ) {
+ 
+         console.error(
+           `${parameter.label} is required`
+         );
+ 
+         return;
+       }
+ 
+     }
+ 
+ 
+     this.apiResponse = null;
+ 
+     this.apiError = null;
+ 
+ 
+     // Execute GET
+     this.apiCaller.execute({
+ 
+       url: this.selectedApi.url,
+ 
+       params: this.apiParams
+ 
+     });
+ 
+   }
+ 
+ 
+   // =====================================================
+   // POST API
+   // =====================================================
+ 
+   selectPostApi(api: PostApiDefinition): void {
+ 
+     this.selectedPostApi = api;
+ 
+     this.selectedApi = undefined as any;
+ 
+     this.postBody = {};
+ 
+     this.apiParams = {};
+ 
+     this.apiResponse = null;
+ 
+     this.apiError = null;
+ 
+ 
+     // Initialize POST body
+     api.fields.forEach((field) => {
+ 
+       this.postBody[field.name] = '';
+ 
+     });
+ 
+   }
+ 
+ 
+   executePostApi(): void {
+ 
+     if (!this.selectedPostApi) {
+       return;
+     }
+ 
+ 
+     // Validate POST fields
+     for (const field of this.selectedPostApi.fields) {
+ 
+       const value = this.postBody[field.name];
+ 
+       if (
+         field.required &&
+         (
+           value === null ||
+           value === undefined ||
+           value.toString().trim() === ''
+         )
+       ) {
+ 
+         console.error(
+           `${field.label} is required`
+         );
+ 
+         return;
+       }
+ 
+     }
+ 
+ 
+     this.apiResponse = null;
+ 
+     this.apiError = null;
+ 
+ 
+     // Execute POST
+     this.postApiCaller.execute({
+ 
+       url: this.selectedPostApi.url,
+ 
+       body: this.postBody
+ 
+     });
+ 
+   }
+ 
+ 
+   // =====================================================
+   // COMMON RESPONSE
+   // =====================================================
+ 
+   onApiResponse(response: any): void {
+ 
+     console.log('GET Response:', response);
+ 
+     this.apiResponse = response;
+ 
+   }
+ 
+ 
+   onPostApiResponse(response: any): void {
+ 
+     console.log('POST Response:', response);
+ 
+     this.apiResponse = response;
+ 
+   }
+ 
+ 
+   onApiError(error: any): void {
+ 
+     console.error('GET Error:', error);
+ 
+     this.apiError = error;
+ 
+   }
+ 
+ 
+   onPostApiError(error: any): void {
+ 
+     console.error('POST Error:', error);
+ 
+     this.apiError = error;
+ 
+   }
+ 
+ 
+   onLoadingChange(loading: boolean): void {
+ 
+     this.apiLoading = loading;
+ 
+   }
+ 
+ 
+   onPostLoadingChange(loading: boolean): void {
+ 
+     this.apiLoading = loading;
+ 
+   }
+ 
+ 
+   // =====================================================
+   // CLEAR
+   // =====================================================
+ 
+   clearRequest(): void {
+ 
+     if (this.selectedApi) {
+ 
+       this.apiParams = {};
+ 
+       this.selectedApi.parameters.forEach((param) => {
+ 
+         this.apiParams[param.name] = '';
+ 
+       });
+ 
+     }
+ 
+ 
+     if (this.selectedPostApi) {
+ 
+       this.postBody = {};
+ 
+       this.selectedPostApi.fields.forEach((field) => {
+ 
+         this.postBody[field.name] = '';
+ 
+       });
+ 
+     }
+ 
+ 
+     this.apiResponse = null;
+ 
+     this.apiError = null;
+ 
+   }
+ 
+ 
+   // =====================================================
+   // COPY RESPONSE
+   // =====================================================
+ 
+   copyResponse(): void {
+ 
+     const json = JSON.stringify(
+       this.apiResponse,
+       null,
+       2
+     );
+ 
+     navigator.clipboard.writeText(json);
+ 
+   }
+ 
+ }
