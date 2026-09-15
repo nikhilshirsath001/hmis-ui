@@ -6,3 +6,8 @@ export interface GetApiDefinition {
   url: string;
   parameters: ApiParameter[];
 }
+
+export interface PostApiCallerRequest {
+  url: string;
+  body: any;
+}
