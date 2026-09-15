@@ -155,4 +155,20 @@ export class EligibliityMainPageComponent {
       console.log('Response copied');
     });
   }
+
+  sendBackApi(): void {
+  const data = {
+    patientId: this.apiResponse.data.patient.patientId,
+    payload: this.apiResponse.data
+  };
+
+  this.eligiblityService.sendBackApi(data).subscribe({
+    next: (res: any) => {
+      this.apiResponse = res.data;
+    },
+    error: (error) => {
+      console.error('Send back API error:', error);
+    }
+  });
+}
 }

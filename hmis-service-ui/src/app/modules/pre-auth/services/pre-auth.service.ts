@@ -12,7 +12,7 @@ export class PreAuthService {
   constructor(private httpClientService: HttpClientService) { }
 
   sendBackApi(data: any) {
-    return this.httpClientService.postObservable(`${this.controllerURL}/pre-auth/send_back`, data);
+    return this.httpClientService.postObservable(`${this.controllerURL}/pre-auth`, data);
   }
 
 }
