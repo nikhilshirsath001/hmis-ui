@@ -112,7 +112,39 @@ selectApi(api: GetApiDefinition): void {
   apiLoading = false;
 
 
-executeApi(): void {
+// executeApi(): void {
+
+//   if (!this.selectedApi) {
+//     return;
+//   }
+
+//   // Validate parameters
+//   for (const parameter of this.selectedApi.parameters) {
+
+//     const value = this.apiParams[parameter.name];
+
+//     if (
+//       parameter.required &&
+//       (!value || value.toString().trim() === '')
+//     ) {
+
+//       console.error(
+//         `${parameter.label} is required`
+//       );
+
+//       return;
+//     }
+
+//   }
+
+//   // Give URL to reusable component
+//   this.apiUrl = this.selectedApi.url;
+
+//   // Give parameters to reusable component
+//   this.apiCaller.callApi();
+// }
+
+  executeApi(): void {
 
   if (!this.selectedApi) {
     return;
@@ -128,22 +160,22 @@ executeApi(): void {
       (!value || value.toString().trim() === '')
     ) {
 
-      console.error(
-        `${parameter.label} is required`
-      );
+      console.error(`${parameter.label} is required`);
 
       return;
     }
-
   }
 
-  // Give URL to reusable component
-  this.apiUrl = this.selectedApi.url;
+  // Clear previous response
+  this.apiResponse = null;
+  this.apiError = null;
 
-  // Give parameters to reusable component
-  this.apiCaller.callApi();
+  // Execute API
+  this.apiCaller.execute({
+    url: this.selectedApi.url,
+    params: this.apiParams
+  });
 }
-
 
   onApiResponse(response: any): void {
 

@@ -1,16 +1,19 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
+
+export interface ApiCallerRequest {
+  url: string;
+  params?: Record<string, any>;
+}
 
 @Component({
   selector: 'app-api-caller',
+  standalone: true,
   imports: [],
   templateUrl: './api-caller.component.html',
   styleUrl: './api-caller.component.css'
 })
 export class ApiCallerComponent {
-  @Input() apiUrl = '';
-
-  @Input() params: Record<string, any> = {};
 
   @Output() apiResponse = new EventEmitter<any>();
 
@@ -22,44 +25,56 @@ export class ApiCallerComponent {
     private http: HttpClient
   ) {}
 
-  callApi(): void {
+  execute(request: ApiCallerRequest): void {
 
-    if (!this.apiUrl) {
+    // Check URL
+    if (!request.url) {
       console.error('API URL is missing');
       return;
     }
+
+    console.log('Calling API:', request.url);
+    console.log('Parameters:', request.params);
 
     this.loadingChange.emit(true);
 
     let httpParams = new HttpParams();
 
-    Object.entries(this.params).forEach(
-      ([key, value]) => {
+    // Add query parameters
+    if (request.params) {
 
-        if (
-          value !== null &&
-          value !== undefined &&
-          value !== ''
-        ) {
+      Object.entries(request.params).forEach(
+        ([key, value]) => {
 
-          httpParams = httpParams.set(
-            key,
-            String(value)
-          );
+          if (
+            value !== null &&
+            value !== undefined &&
+            value !== ''
+          ) {
+
+            httpParams = httpParams.set(
+              key,
+              String(value)
+            );
+
+          }
 
         }
+      );
 
-      }
-    );
+    }
 
+    // GET API call
     this.http.get(
-      this.apiUrl,
+      request.url,
       {
         params: httpParams
       }
     ).subscribe({
 
       next: (response) => {
+
+        console.log('API Response:', response);
 
         this.loadingChange.emit(false);
 
@@ -68,6 +83,8 @@ export class ApiCallerComponent {
       },
 
       error: (error) => {
+
+        console.error('API Error:', error);
 
         this.loadingChange.emit(false);
 

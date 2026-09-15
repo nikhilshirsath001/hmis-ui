@@ -690,15 +690,12 @@
 
 
 
-  <app-api-caller
-    [apiUrl]="apiUrl"
-    [params]="apiParams"
-    (apiResponse)="onApiResponse($event)"
-    (apiError)="onApiError($event)"
-    (loadingChange)="onLoadingChange($event)"
-  >
-  </app-api-caller>
-
+<app-api-caller
+  (apiResponse)="onApiResponse($event)"
+  (apiError)="onApiError($event)"
+  (loadingChange)="onLoadingChange($event)"
+>
+</app-api-caller>
 
 
   <div class="module-section">

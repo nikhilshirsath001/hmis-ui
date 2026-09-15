@@ -82,28 +82,38 @@ export class PreAuthMainPageComponent {
 
   apiLoading = false;
 
-  executeApi(): void {
-    if (!this.selectedApi) {
+    executeApi(): void {
+
+  if (!this.selectedApi) {
+    return;
+  }
+
+  // Validate parameters
+  for (const parameter of this.selectedApi.parameters) {
+
+    const value = this.apiParams[parameter.name];
+
+    if (
+      parameter.required &&
+      (!value || value.toString().trim() === '')
+    ) {
+
+      console.error(`${parameter.label} is required`);
+
       return;
     }
-
-    // Validate parameters
-    for (const parameter of this.selectedApi.parameters) {
-      const value = this.apiParams[parameter.name];
-
-      if (parameter.required && (!value || value.toString().trim() === '')) {
-        console.error(`${parameter.label} is required`);
-
-        return;
-      }
-    }
-
-    // Give URL to reusable component
-    this.apiUrl = this.selectedApi.url;
-
-    // Give parameters to reusable component
-    this.apiCaller.callApi();
   }
+
+  // Clear previous response
+  this.apiResponse = null;
+  this.apiError = null;
+
+  // Execute API
+  this.apiCaller.execute({
+    url: this.selectedApi.url,
+    params: this.apiParams
+  });
+}
 
   onApiResponse(response: any): void {
     console.log('API Response:', response);
