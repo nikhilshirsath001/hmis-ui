@@ -18,23 +18,25 @@ export const MENU_ITEMS : MenuItem[] = [
   {
     label: 'Patient',
     icon: 'pi pi-users',
-    items: [
-      {
-        label: 'Create Patient',
-        icon: 'pi pi-user-plus',
-        routerLink: ['/patient', 'create-patient']
-      },
-      {
-        label: 'Create Diagnosis',
-        icon: 'pi pi-heart',
-        routerLink: ['/patient', 'create-diagnosis']
-      },
-      {
-        label: 'Create Procedure',
-        icon: 'pi pi-list-check',
-        routerLink: ['/patient', 'create-procedure']
-      }
-    ]
+    routerLink: ['/patient', 'create-patient']
+
+    // items: [
+    //   {
+    //     label: 'Create Patient',
+    //     icon: 'pi pi-user-plus',
+    //     routerLink: ['/patient', 'create-patient']
+    //   },
+    //   {
+    //     label: 'Create Diagnosis',
+    //     icon: 'pi pi-heart',
+    //     routerLink: ['/patient', 'create-diagnosis']
+    //   },
+    //   {
+    //     label: 'Create Procedure',
+    //     icon: 'pi pi-list-check',
+    //     routerLink: ['/patient', 'create-procedure']
+    //   }
+    // ]
   },
 
   {

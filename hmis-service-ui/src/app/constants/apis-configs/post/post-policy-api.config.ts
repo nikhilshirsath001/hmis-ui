@@ -35,18 +35,18 @@ export const POLICY_POST_APIS: PostApiDefinition[] = [
 
       {
         name: 'patientId',
-        label: 'Policy Number',
+        label: 'Patient Id',
         type: 'number',
         required: true,
-        placeholder: 'Enter policy number'
+        placeholder: 'Enter Patient Id'
       },
 
       {
         name: 'policyNumber',
-        label: 'Policy Holder Name',
+        label: 'Policy Number',
         type: 'text',
         required: true,
-        placeholder: 'Enter policy holder name'
+        placeholder: 'Enter Policy Number'
       }
 
     ]

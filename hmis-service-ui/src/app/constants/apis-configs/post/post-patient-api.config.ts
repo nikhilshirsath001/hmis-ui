@@ -25,41 +25,41 @@ export interface MultipartApiDefinition {
 
 
 export const PATIENT_POST_APIS: PostApiDefinition[] = [
-  {
-    id: 'create-diagnosis',
-    name: 'Create Diagnosis',
-    description: 'Create a diagnosis for an existing patient.',
-    url: 'http://localhost:8081/api/patient/diagnosis',
-    method: 'POST',
+//   {
+//     id: 'create-diagnosis',
+//     name: 'Create Diagnosis',
+//     description: 'Create a diagnosis for an existing patient.',
+//     url: 'http://localhost:8081/api/patient/diagnosis',
+//     method: 'POST',
 
-    fields: [
-      {
-        name: 'patientId',
-        label: 'Patient ID',
-        type: 'text',
-        required: true,
-        placeholder: 'Enter Patient ID',
-      }
-    ]
-  },
+//     fields: [
+//       {
+//         name: 'patientId',
+//         label: 'Patient ID',
+//         type: 'text',
+//         required: true,
+//         placeholder: 'Enter Patient ID',
+//       }
+//     ]
+//   },
 
-  {
-    id: 'create-procedure',
-    name: 'Create Procedure',
-    description: 'Create a procedure for an existing patient.',
-    url: 'http://localhost:8081/api/patient/procedure',
-    method: 'POST',
+//   {
+//     id: 'create-procedure',
+//     name: 'Create Procedure',
+//     description: 'Create a procedure for an existing patient.',
+//     url: 'http://localhost:8081/api/patient/procedure',
+//     method: 'POST',
 
-    fields: [
-      {
-        name: 'patientId',
-        label: 'Patient ID',
-        type: 'text',
-        required: true,
-        placeholder: 'Enter Patient ID'
-      }
-    ]
-  }
+//     fields: [
+//       {
+//         name: 'patientId',
+//         label: 'Patient ID',
+//         type: 'text',
+//         required: true,
+//         placeholder: 'Enter Patient ID'
+//       }
+//     ]
+//   }
 ];
 
 export const PATIENT_MULTIPART_APIS: MultipartApiDefinition[] = [
