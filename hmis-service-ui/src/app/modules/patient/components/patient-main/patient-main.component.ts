@@ -1,346 +1,879 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild } from '@angular/core';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-  FormsModule,
-} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 import { InputTextModule } from 'primeng/inputtext';
 import { FileUploadModule } from 'primeng/fileupload';
 import { ButtonModule } from 'primeng/button';
-import { PatientService } from '../../services/patient.service';
-import { ActivatedRoute } from '@angular/router';
-import { ApiCallerComponent } from '../../../../common/reusable-component/api-caller/api-caller.component';
-import { GetApiDefinition } from '../../../../models/get-api-definition';
+
+import {
+  ApiCallerComponent
+} from '../../../../common/reusable-component/api-caller/api-caller.component';
+
+
+import {
+  GetApiDefinition
+} from '../../../../models/get-api-definition';
+import { PostApiCallerComponent } from '../../../../common/reusable-component/api-caller/post-api-caller/post-api-caller.component';
 import { PATIENT_GET_APIS } from '../../../../constants/apis-configs/patient-api.config';
+import { MultipartApiDefinition, PATIENT_MULTIPART_APIS, PATIENT_POST_APIS } from '../../../../constants/apis-configs/post/post-patient-api.config';
+import { PostApiDefinition } from '../../../../constants/apis-configs/post/post-policy-api.config';
+import { MultipartApiCallerComponent } from '../../../../common/reusable-component/api-caller/multipart-api-caller/multipart-api-caller.component';
+
+
+
+
 @Component({
   standalone: true,
+
   selector: 'app-patient-main',
+
   imports: [
-    ButtonModule,
     CommonModule,
-    ReactiveFormsModule,
+    FormsModule,
     InputTextModule,
     FileUploadModule,
+    ButtonModule,
     ApiCallerComponent,
-    FormsModule
-  ],
+    PostApiCallerComponent,
+    MultipartApiCallerComponent
+],
+
   templateUrl: './patient-main.component.html',
-  styleUrl: './patient-main.component.css',
+
+  styleUrl: './patient-main.component.css'
 })
 export class PatientMainComponent {
-  patientForm: FormGroup;
-  diagnosysForm!:FormGroup;
-  procedureForm!:FormGroup;
 
-  apiCallForm!: FormGroup;
 
-  formType:any;
+  /* =========================================================
+     API CALLERS
+     ========================================================= */
 
   @ViewChild(ApiCallerComponent)
   apiCaller!: ApiCallerComponent;
 
-  selectedApi!: GetApiDefinition;
+
+  @ViewChild(PostApiCallerComponent)
+  postApiCaller!: PostApiCallerComponent;
+
+  @ViewChild(MultipartApiCallerComponent)
+multipartApiCaller!: MultipartApiCallerComponent;
+
+
+  /* =========================================================
+     API CONFIGURATION
+     ========================================================= */
+
+  getApis = PATIENT_GET_APIS;
+
+  postApis = PATIENT_POST_APIS;
+
+  multipartApis = PATIENT_MULTIPART_APIS;
+
+
+
+  /* =========================================================
+     SELECTED APIs
+     ========================================================= */
+
+  selectedApi: GetApiDefinition | null = null;
+
+  selectedPostApi: PostApiDefinition | null = null;
+
+  selectedMultipartApi: MultipartApiDefinition | null = null;
+
+
+
+  /* =========================================================
+     REQUEST DATA
+     ========================================================= */
+
   apiParams: Record<string, any> = {};
-  // apiError:any;
-apiUrl = '';
+
+  postBody: Record<string, any> = {};
+
+  multipartValues: Record<string, any> = {};
+
+  selectedFiles: Record<string, File | null> = {};
+
+
+
+  /* =========================================================
+     RESPONSE
+     ========================================================= */
+
   apiResponse: any = null;
 
-  selectedFiles: {
-    identityDocument: File | null;
-    medicalReport: File | null;
-    otherDocument: File | null;
-  } = {
-    identityDocument: null,
-    medicalReport: null,
-    otherDocument: null,
-  };
-
-  getApis= PATIENT_GET_APIS;
-
-  constructor(
-    private fb: FormBuilder,
-    private patientService: PatientService,
-    private route: ActivatedRoute
-  ) {
-    this.apiCallForm =this.fb.group({abhaId: ['', [Validators.required]]});
-
-    this.patientForm = this.fb.group({
-      abhaId: ['', [Validators.required]],
-
-      identityDocument: [null, [Validators.required]],
-
-      medicalReport: [null, [Validators.required]],
-
-      otherDocument: [null, [Validators.required]],
-    });
-  }
-
-   ngOnInit(): void {
-    // this.apiResponse=null;
-    this.route.paramMap.subscribe(params => {
-      this.formType = params.get('formType') || '';
-      this.loadForm();
-    });
-  }
-
-selectApi(api: GetApiDefinition): void {
-
-  this.selectedApi = api;
-
-  this.apiParams = {};
-
-  this.apiResponse = null;
-
-  this.apiError = null;
-
-  // Initialize parameters
-  api.parameters.forEach(param => {
-
-    this.apiParams[param.name] = '';
-
-  });
-}
-
-
   apiError: any = null;
-
 
   apiLoading = false;
 
 
-// executeApi(): void {
 
-//   if (!this.selectedApi) {
-//     return;
-//   }
+  /* =========================================================
+     GET API
+     ========================================================= */
 
-//   // Validate parameters
-//   for (const parameter of this.selectedApi.parameters) {
+  selectApi(api: GetApiDefinition): void {
 
-//     const value = this.apiParams[parameter.name];
+    this.selectedApi = api;
 
-//     if (
-//       parameter.required &&
-//       (!value || value.toString().trim() === '')
-//     ) {
+    this.selectedPostApi = null;
 
-//       console.error(
-//         `${parameter.label} is required`
-//       );
+    this.selectedMultipartApi = null;
 
-//       return;
-//     }
 
-//   }
+    this.apiParams = {};
 
-//   // Give URL to reusable component
-//   this.apiUrl = this.selectedApi.url;
+    this.postBody = {};
 
-//   // Give parameters to reusable component
-//   this.apiCaller.callApi();
-// }
+    this.multipartValues = {};
+
+    this.selectedFiles = {};
+
+
+    this.clearResponse();
+
+
+    api.parameters.forEach(parameter => {
+
+      this.apiParams[parameter.name] = '';
+
+    });
+
+  }
+
+
 
   executeApi(): void {
 
-  if (!this.selectedApi) {
-    return;
+    if (!this.selectedApi) {
+      return;
+    }
+
+
+    for (const parameter of this.selectedApi.parameters) {
+
+      const value =
+        this.apiParams[parameter.name];
+
+
+      if (
+        parameter.required &&
+        (
+          value === null ||
+          value === undefined ||
+          value.toString().trim() === ''
+        )
+      ) {
+
+        console.error(
+          `${parameter.label} is required`
+        );
+
+        return;
+      }
+
+    }
+
+
+    this.clearResponse();
+
+
+    this.apiCaller.execute({
+
+      url: this.selectedApi.url,
+
+      params: this.apiParams
+
+    });
+
   }
 
-  // Validate parameters
-  for (const parameter of this.selectedApi.parameters) {
 
-    const value = this.apiParams[parameter.name];
 
-    if (
-      parameter.required &&
-      (!value || value.toString().trim() === '')
-    ) {
+  /* =========================================================
+     POST API
+     ========================================================= */
 
-      console.error(`${parameter.label} is required`);
+  selectPostApi(api: PostApiDefinition): void {
 
+    this.selectedPostApi = api;
+
+    this.selectedApi = null;
+
+    this.selectedMultipartApi = null;
+
+
+    this.apiParams = {};
+
+    this.postBody = {};
+
+    this.multipartValues = {};
+
+    this.selectedFiles = {};
+
+
+    this.clearResponse();
+
+
+    api.fields.forEach(field => {
+
+      this.postBody[field.name] = '';
+
+    });
+
+  }
+
+
+
+  executePostApi(): void {
+
+    if (!this.selectedPostApi) {
       return;
+    }
+
+
+    for (const field of this.selectedPostApi.fields) {
+
+      const value =
+        this.postBody[field.name];
+
+
+      if (
+        field.required &&
+        (
+          value === null ||
+          value === undefined ||
+          value.toString().trim() === ''
+        )
+      ) {
+
+        console.error(
+          `${field.label} is required`
+        );
+
+        return;
+      }
+
+    }
+
+
+    this.clearResponse();
+
+
+    this.postApiCaller.execute({
+
+      url: this.selectedPostApi.url,
+
+      body: this.postBody
+
+    });
+
+  }
+
+
+
+  /* =========================================================
+     MULTIPART API
+     ========================================================= */
+
+  selectMultipartApi(
+    api: MultipartApiDefinition
+  ): void {
+
+    this.selectedMultipartApi = api;
+
+    this.selectedApi = null;
+
+    this.selectedPostApi = null;
+
+
+    this.apiParams = {};
+
+    this.postBody = {};
+
+    this.multipartValues = {};
+
+    this.selectedFiles = {};
+
+
+    this.clearResponse();
+
+
+    api.fields.forEach(field => {
+
+      if (field.type === 'file') {
+
+        this.selectedFiles[field.name] = null;
+
+      } else {
+
+        this.multipartValues[field.name] = '';
+
+      }
+
+    });
+
+  }
+
+
+
+  // executeMultipartApi(): void {
+
+  //   if (!this.selectedMultipartApi) {
+  //     return;
+  //   }
+
+
+  //   /* ---------------------------------------------------------
+  //      Validate fields
+  //      --------------------------------------------------------- */
+
+  //   for (const field of this.selectedMultipartApi.fields) {
+
+  //     if (field.type === 'file') {
+
+  //       const file =
+  //         this.selectedFiles[field.name];
+
+
+  //       if (field.required && !file) {
+
+  //         console.error(
+  //           `${field.label} is required`
+  //         );
+
+  //         return;
+  //       }
+
+  //     } else {
+
+  //       const value =
+  //         this.multipartValues[field.name];
+
+
+  //       if (
+  //         field.required &&
+  //         (
+  //           value === null ||
+  //           value === undefined ||
+  //           value.toString().trim() === ''
+  //         )
+  //       ) {
+
+  //         console.error(
+  //           `${field.label} is required`
+  //         );
+
+  //         return;
+  //       }
+
+  //     }
+
+  //   }
+
+
+  //   /* ---------------------------------------------------------
+  //      Create FormData
+  //      --------------------------------------------------------- */
+
+  //   const formData = new FormData();
+
+
+  //   /* ---------------------------------------------------------
+  //      Metadata
+  //      --------------------------------------------------------- */
+
+  //   const metadata: Record<string, any> = {};
+
+
+  //   this.selectedMultipartApi.fields
+  //     .filter(field => field.type !== 'file')
+  //     .forEach(field => {
+
+  //       metadata[field.name] =
+  //         this.multipartValues[field.name];
+
+  //     });
+
+
+  //   formData.append(
+
+  //     'metadata',
+
+  //     new Blob(
+  //       [
+  //         JSON.stringify(metadata)
+  //       ],
+  //       {
+  //         type: 'application/json'
+  //       }
+  //     )
+
+  //   );
+
+
+  //   /* ---------------------------------------------------------
+  //      Files
+  //      --------------------------------------------------------- */
+
+  //   this.selectedMultipartApi.fields
+  //     .filter(field => field.type === 'file')
+  //     .forEach(field => {
+
+  //       const file =
+  //         this.selectedFiles[field.name];
+
+
+  //       if (!file) {
+  //         return;
+  //       }
+
+
+  //       const requestName = field.name;
+
+
+  //       formData.append(
+
+  //         requestName,
+
+  //         file,
+
+  //         file.name
+
+  //       );
+
+  //     });
+
+
+  //   /* ---------------------------------------------------------
+  //      Clear previous response
+  //      --------------------------------------------------------- */
+
+  //   this.clearResponse();
+
+
+  //   /* ---------------------------------------------------------
+  //      Call multipart API
+  //      --------------------------------------------------------- */
+
+  //   // We will use the multipart caller here.
+  //   this.executeMultipartRequest(
+  //     this.selectedMultipartApi.url,
+  //     formData
+  //   );
+
+  // }
+
+
+executeMultipartApi(): void {
+  if (!this.selectedMultipartApi) return;
+
+  // Validate fields
+  for (const field of this.selectedMultipartApi.fields) {
+
+    if (field.type === 'file') {
+
+      const file = this.selectedFiles[field.name];
+
+      if (field.required && !file) {
+        console.error(`${field.label} is required`);
+        return;
+      }
+
+    } else {
+
+      const value = this.multipartValues[field.name];
+
+      if (
+        field.required &&
+        (
+          value === null ||
+          value === undefined ||
+          value.toString().trim() === ''
+        )
+      ) {
+        console.error(`${field.label} is required`);
+        return;
+      }
     }
   }
 
-  // Clear previous response
-  this.apiResponse = null;
-  this.apiError = null;
+  // Prepare metadata
+  const metadata: Record<string, any> = {};
 
-  // Execute API
-  this.apiCaller.execute({
-    url: this.selectedApi.url,
-    params: this.apiParams
+  this.selectedMultipartApi.fields
+    .filter(field => field.type !== 'file')
+    .forEach(field => {
+      metadata[field.name] = this.multipartValues[field.name];
+    });
+
+  // Prepare files
+  const files: Record<string, File | null> = {};
+
+  this.selectedMultipartApi.fields
+    .filter(field => field.type === 'file')
+    .forEach(field => {
+      files[field.name] = this.selectedFiles[field.name] || null;
+    });
+
+  // Prepare backend file-name mapping
+  const fileFieldNames: Record<string, string> = {};
+
+  this.selectedMultipartApi.fields
+    .filter(field => field.type === 'file')
+    .forEach(field => {
+
+      if (field.name) {
+        fileFieldNames[field.fieldName] = field.name;
+      }
+
+    });
+
+  this.clearResponse();
+
+  this.multipartApiCaller.execute({
+    url: this.selectedMultipartApi.url,
+    metadata: metadata,
+    files: files,
+    fileFieldNames: fileFieldNames
   });
 }
 
-  onApiResponse(response: any): void {
+  /* =========================================================
+     FILE SELECTION
+     ========================================================= */
 
-    console.log('API Response:', response);
+  onFileSelect(
+    event: any,
+    fieldName: string
+  ): void {
+
+    const file =
+      event.files?.[0];
+
+
+    if (!file) {
+      return;
+    }
+
+
+    this.selectedFiles[fieldName] = file;
+
+  }
+
+
+
+  onFileRemove(
+    fieldName: string
+  ): void {
+
+    this.selectedFiles[fieldName] = null;
+
+  }
+
+
+
+  /* =========================================================
+     MULTIPART EXECUTION
+     ========================================================= */
+
+  // executeMultipartRequest(
+  //   url: string,
+  //   formData: FormData
+  // ): void {
+
+  //   /*
+  //    * This method will be connected to your reusable
+  //    * MultipartApiCallerComponent.
+  //    *
+  //    * See the component below.
+  //    */
+
+  //   this.apiLoading = true;
+
+  //   this.apiError = null;
+
+  //   this.apiResponse = null;
+
+
+  //   this.multipartCaller.execute({
+
+  //     url: url,
+
+  //     formData: formData
+
+  //   });
+
+  // }
+
+
+//   executeMultipartRequest(
+//   url: string,
+//   formData: FormData
+// ): void {
+
+//   this.apiLoading = true;
+//   this.apiError = null;
+//   this.apiResponse = null;
+
+//   this.multipartApiCaller.execute({
+//     url: url,
+//     formData: formData
+//   });
+
+// }
+
+
+  /* =========================================================
+     MULTIPART CALLER
+     ========================================================= */
+
+  @ViewChild('multipartCaller')
+  multipartCaller!: any;
+
+
+
+  /* =========================================================
+     RESPONSE HANDLING
+     ========================================================= */
+
+  onApiResponse(
+    response: any
+  ): void {
+
+    console.log(
+      'GET Response:',
+      response
+    );
 
     this.apiResponse = response;
 
   }
 
 
-  onApiError(error: any): void {
 
-    console.error('API Error:', error);
+  onApiError(
+    error: any
+  ): void {
+
+    console.error(
+      'GET Error:',
+      error
+    );
 
     this.apiError = error;
 
   }
 
 
-  onLoadingChange(loading: boolean): void {
+
+  onLoadingChange(
+    loading: boolean
+  ): void {
 
     this.apiLoading = loading;
 
   }
 
-  loadForm(): void {
 
-    switch (this.formType) {
 
-      case 'create-patient':
-        // Create patient form
-        break;
-
-      case 'create-diagnosis':
-        // Create diagnosis form
-         this.diagnosysForm = this.fb.group({patientId: ['', [Validators.required]],});
-        break;
-
-      case 'create-procedure':
-         this.procedureForm = this.fb.group({patientId: ['', [Validators.required]],});
-        break;
-
-      default:
-        console.error('Unknown form type:', this.formType);
-        break;
-    }
-  }
-
-  copyResponse(): void {
-  const json = JSON.stringify(this.apiResponse, null, 2);
-
-  navigator.clipboard.writeText(json).then(() => {
-    console.log('Response copied');
-  });
-}
-  onFileSelect(
-    event: any,
-    controlName: 'identityDocument' | 'medicalReport' | 'otherDocument',
+  onPostApiResponse(
+    response: any
   ): void {
-    const file = event.files?.[0];
 
-    if (!file) {
-      return;
-    }
-
-    this.selectedFiles[controlName] = file;
-
-    this.patientForm.get(controlName)?.setValue(file);
-
-    this.patientForm.get(controlName)?.markAsTouched();
-
-    this.patientForm.get(controlName)?.updateValueAndValidity();
-  }
-
-  /**
-   * Handle file removal
-   */
-  onFileRemove(
-    controlName: 'identityDocument' | 'medicalReport' | 'otherDocument',
-  ): void {
-    this.selectedFiles[controlName] = null;
-
-    this.patientForm.get(controlName)?.setValue(null);
-
-    this.patientForm.get(controlName)?.markAsTouched();
-
-    this.patientForm.get(controlName)?.updateValueAndValidity();
-  }
-
-  onSubmitDiagnosisForm(){
-    if(this.diagnosysForm.invalid){
-      this.diagnosysForm.markAllAsTouched();
-      return;
-    }
-
-    const diagnosisObj =  this.diagnosysForm.getRawValue();
-
-    this.patientService.submitDiagnosisForm(diagnosisObj).subscribe({
-      next: (response:any) => {
-        this.apiResponse = response;
-      },
-      error: (error) => {
-        this.apiResponse = null;
-      },
-    });
-  }
-
-onSubmitProcedureForm(){
-      if(this.procedureForm.invalid){
-      this.procedureForm.markAllAsTouched();
-      return;
-    }
-
-    const procedureObj =  this.procedureForm.getRawValue();
-
-    this.patientService.submitDiagnosisForm(procedureObj).subscribe({
-      next: (response:any) => {
-        this.apiResponse = response;
-      },
-      error: (error) => {
-        this.apiResponse = null;
-      },
-    });
-  }
-
-  onSubmit(): void {
-    if (this.patientForm.invalid) {
-      this.patientForm.markAllAsTouched();
-      return;
-    }
-    const formData = new FormData();
-    const metadata = {
-      abhaId: this.patientForm.get('abhaId')?.value,
-    };
-
-    formData.append(
-      'metadata',
-      new Blob([JSON.stringify(metadata)], { type: 'application/json' }),
+    console.log(
+      'POST Response:',
+      response
     );
 
-    const identityDocument = this.selectedFiles.identityDocument;
+    this.apiResponse = response;
 
-    const medicalReport = this.selectedFiles.medicalReport;
-
-    const otherDocument = this.selectedFiles.otherDocument;
-
-    if (identityDocument) {
-      formData.append('PHOTO', identityDocument, identityDocument.name);
-    }
-
-    if (medicalReport) {
-      formData.append('PAN', medicalReport, medicalReport.name);
-    }
-
-    if (otherDocument) {
-      formData.append('AADHAAR', otherDocument, otherDocument.name);
-    }
-
-    this.patientService.submitPatientDocuments(formData).subscribe({
-      next: (response) => {
-        this.apiResponse= response;
-      },
-      error: (error) => {
-        this.apiResponse= null;
-      },
-    });
   }
+
+
+
+  onPostApiError(
+    error: any
+  ): void {
+
+    console.error(
+      'POST Error:',
+      error
+    );
+
+    this.apiError = error;
+
+  }
+
+
+
+  onPostLoadingChange(
+    loading: boolean
+  ): void {
+
+    this.apiLoading = loading;
+
+  }
+
+
+
+  /* =========================================================
+     MULTIPART RESPONSE
+     ========================================================= */
+
+  onMultipartApiResponse(
+    response: any
+  ): void {
+
+    console.log(
+      'Multipart Response:',
+      response
+    );
+
+    this.apiLoading = false;
+
+    this.apiResponse = response;
+
+  }
+
+
+
+  onMultipartApiError(
+    error: any
+  ): void {
+
+    console.error(
+      'Multipart Error:',
+      error
+    );
+
+    this.apiLoading = false;
+
+    this.apiError = error;
+
+  }
+
+
+
+  onMultipartLoadingChange(
+    loading: boolean
+  ): void {
+
+    this.apiLoading = loading;
+
+  }
+
+
+
+  /* =========================================================
+     CLEAR
+     ========================================================= */
+
+  clearResponse(): void {
+
+    this.apiResponse = null;
+
+    this.apiError = null;
+
+    this.apiLoading = false;
+
+  }
+
+
+
+  clearRequest(): void {
+
+    if (this.selectedApi) {
+
+      this.apiParams = {};
+
+      this.selectedApi.parameters
+        .forEach(parameter => {
+
+          this.apiParams[parameter.name] = '';
+
+        });
+
+    }
+
+
+    if (this.selectedPostApi) {
+
+      this.postBody = {};
+
+      this.selectedPostApi.fields
+        .forEach(field => {
+
+          this.postBody[field.name] = '';
+
+        });
+
+    }
+
+
+    if (this.selectedMultipartApi) {
+
+      this.multipartValues = {};
+
+      this.selectedFiles = {};
+
+
+      this.selectedMultipartApi.fields
+        .forEach(field => {
+
+          if (field.type === 'file') {
+
+            this.selectedFiles[field.name] = null;
+
+          } else {
+
+            this.multipartValues[field.name] = '';
+
+          }
+
+        });
+
+    }
+
+
+    this.clearResponse();
+
+  }
+
+
+
+  /* =========================================================
+     COPY RESPONSE
+     ========================================================= */
+
+  copyResponse(): void {
+
+    if (this.apiResponse == null) {
+      return;
+    }
+
+
+    const json =
+      JSON.stringify(
+        this.apiResponse,
+        null,
+        2
+      );
+
+
+    navigator.clipboard
+      .writeText(json)
+      .then(() => {
+
+        console.log(
+          'Response copied'
+        );
+
+      });
+
+  }
+
 }

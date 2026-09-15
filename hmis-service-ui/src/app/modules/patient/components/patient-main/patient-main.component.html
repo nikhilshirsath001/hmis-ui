@@ -1,453 +1,282 @@
-<!-- <div class="row">
-  <div class="col-12">
-    <h2>Patient APIs</h2>
-
-    <div class="api-list">
-      <p-button
-        *ngFor="let api of getApis"
-        [label]="api.name"
-        severity="secondary"
-        (onClick)="selectApi(api)"
-      >
-      </p-button>
-    </div>
-  </div>
-</div>
-
-<div class="api-request-card" *ngIf="selectedApi">
-  <div class="api-header">
-    <div>
-      <span class="method-badge get"> GET </span>
-
-      <span class="api-url">
-        {{ selectedApi.url }}
-      </span>
-    </div>
-  </div>
-
-  <div class="api-description">
-    {{ selectedApi.description }}
-  </div>
-
-  <div class="parameters">
-    <h4>Parameters</h4>
-
-    <div class="form-group" *ngFor="let parameter of selectedApi.parameters">
-      <label>
-        {{ parameter.label }}
-
-        <span *ngIf="parameter.required" class="required"> * </span>
-      </label>
-
-      <input
-        pInputText
-        type="text"
-        [placeholder]="parameter.placeholder || ''"
-        [(ngModel)]="apiParams[parameter.name]"
-        class="full-width"
-      />
-    </div>
-  </div>
-
-  <div class="form-actions">
-    <p-button
-      label="Execute"
-      icon="pi pi-send"
-      [loading]="apiLoading"
-      (onClick)="executeApi()"
-    >
-    </p-button>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-6">
-    <app-api-caller
-      [apiUrl]="apiUrl"
-      [params]="apiParams"
-      (apiResponse)="onApiResponse($event)"
-      (apiError)="onApiError($event)"
-      (loadingChange)="onLoadingChange($event)"
-    >
-    </app-api-caller>
-
-    <div [ngSwitch]="formType">
-      <div *ngSwitchCase="'create-patient'">
-        <div>
-          <div class="form-card">
-            <div class="form-header">
-              <h2>Patient Documents</h2>
-              <p>Please enter the Abha ID and upload the required documents.</p>
-            </div>
-
-            <form [formGroup]="patientForm" (ngSubmit)="onSubmit()">
-              <div class="form-group">
-                <label for="abhaId">
-                  Abha ID <span class="required">*</span>
-                </label>
-
-                <input
-                  id="abhaId"
-                  type="text"
-                  pInputText
-                  formControlName="abhaId"
-                  placeholder="Enter Abha ID"
-                  class="full-width"
-                  [class.ng-invalid]="
-                    patientForm.get('abhaId')?.invalid &&
-                    patientForm.get('abhaId')?.touched
-                  "
-                />
-
-                <small
-                  class="error-message"
-                  *ngIf="
-                    patientForm.get('patientId')?.hasError('required') &&
-                    patientForm.get('patientId')?.touched
-                  "
-                >
-                  Patient ID is required.
-                </small>
-              </div>
-
-              <div class="documents-section">
-                <div class="section-title">
-                  <h3>Upload Documents</h3>
-                  <span>PDF, JPG, PNG</span>
-                </div>
-
-                <div class="file-grid">
-                  <div class="file-group">
-                    <label>
-                      Identity Document
-                      <span class="required">*</span>
-                    </label>
-
-                    <p-fileUpload
-                      mode="basic"
-                      chooseLabel="Choose File"
-                      chooseIcon="pi pi-upload"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      [maxFileSize]="5000000"
-                      [auto]="false"
-                      [customUpload]="true"
-                      (onSelect)="onFileSelect($event, 'identityDocument')"
-                      (onRemove)="onFileRemove('identityDocument')"
-                    >
-                    </p-fileUpload>
-
-                    <small
-                      *ngIf="selectedFiles.identityDocument"
-                      class="selected-file"
-                    >
-                      <i class="pi pi-file"></i>
-                      {{ selectedFiles.identityDocument.name }}
-                    </small>
-
-                    <small
-                      *ngIf="
-                        patientForm.get('identityDocument')?.invalid &&
-                        patientForm.get('identityDocument')?.touched
-                      "
-                      class="error-message"
-                    >
-                      Identity document is required.
-                    </small>
-                  </div>
-
-                  <div class="file-group">
-                    <label>
-                      Medical Report
-                      <span class="required">*</span>
-                    </label>
-
-                    <p-fileUpload
-                      mode="basic"
-                      chooseLabel="Choose File"
-                      chooseIcon="pi pi-upload"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      [maxFileSize]="5000000"
-                      [auto]="false"
-                      [customUpload]="true"
-                      (onSelect)="onFileSelect($event, 'medicalReport')"
-                      (onRemove)="onFileRemove('medicalReport')"
-                    >
-                    </p-fileUpload>
-
-                    <small
-                      *ngIf="selectedFiles.medicalReport"
-                      class="selected-file"
-                    >
-                      <i class="pi pi-file"></i>
-                      {{ selectedFiles.medicalReport.name }}
-                    </small>
-
-                    <small
-                      *ngIf="
-                        patientForm.get('medicalReport')?.invalid &&
-                        patientForm.get('medicalReport')?.touched
-                      "
-                      class="error-message"
-                    >
-                      Medical report is required.
-                    </small>
-                  </div>
-
-                  <div class="file-group">
-                    <label>
-                      Other Document
-                      <span class="required">*</span>
-                    </label>
-
-                    <p-fileUpload
-                      mode="basic"
-                      chooseLabel="Choose File"
-                      chooseIcon="pi pi-upload"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      [maxFileSize]="5000000"
-                      [auto]="false"
-                      [customUpload]="true"
-                      (onSelect)="onFileSelect($event, 'otherDocument')"
-                      (onRemove)="onFileRemove('otherDocument')"
-                    >
-                    </p-fileUpload>
-
-                    <small
-                      *ngIf="selectedFiles.otherDocument"
-                      class="selected-file"
-                    >
-                      <i class="pi pi-file"></i>
-                      {{ selectedFiles.otherDocument.name }}
-                    </small>
-
-                    <small
-                      *ngIf="
-                        patientForm.get('otherDocument')?.invalid &&
-                        patientForm.get('otherDocument')?.touched
-                      "
-                      class="error-message"
-                    >
-                      Document is required.
-                    </small>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-actions">
-                <p-button type="submit" label="Submit" icon="pi pi-check">
-                </p-button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div *ngSwitchCase="'create-diagnosis'">
-        <div>
-          <div class="form-card">
-            <div class="form-header">
-              <h2>Diagnosis Form</h2>
-              <p>
-                Please enter the Patient ID and upload the required documents.
-              </p>
-            </div>
-            <form
-              [formGroup]="diagnosysForm"
-              (ngSubmit)="onSubmitDiagnosisForm()"
-            >
-              <div class="form-group">
-                <label for="patientId">
-                  Ptient ID <span class="required">*</span>
-                </label>
-
-                <input
-                  id="patientId"
-                  type="text"
-                  pInputText
-                  formControlName="patientId"
-                  placeholder="Enter Patient ID"
-                  class="full-width"
-                  [class.ng-invalid]="
-                    diagnosysForm.get('patientId')?.invalid &&
-                    diagnosysForm.get('patientId')?.touched
-                  "
-                />
-
-                <small
-                  class="error-message"
-                  *ngIf="
-                    diagnosysForm.get('patientId')?.hasError('required') &&
-                    diagnosysForm.get('patientId')?.touched
-                  "
-                >
-                  Patient ID is required.
-                </small>
-              </div>
-              <div class="form-actions">
-                <p-button type="submit" label="Submit" icon="pi pi-check">
-                </p-button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <div *ngSwitchCase="'create-procedure'">
-        <div>
-          <div class="form-card">
-            <div class="form-header">
-              <h2>Procedure Form</h2>
-              <p>
-                Please enter the Patient ID and upload the required documents.
-              </p>
-            </div>
-            <form
-              [formGroup]="procedureForm"
-              (ngSubmit)="onSubmitProcedureForm()"
-            >
-              <div class="form-group">
-                <label for="patientId">
-                  Ptient ID <span class="required">*</span>
-                </label>
-
-                <input
-                  id="patientId"
-                  type="text"
-                  pInputText
-                  formControlName="patientId"
-                  placeholder="Enter Patient ID"
-                  class="full-width"
-                  [class.ng-invalid]="
-                    procedureForm.get('patientId')?.invalid &&
-                    procedureForm.get('patientId')?.touched
-                  "
-                />
-
-                <small
-                  class="error-message"
-                  *ngIf="
-                    procedureForm.get('patientId')?.hasError('required') &&
-                    procedureForm.get('patientId')?.touched
-                  "
-                >
-                  Patient ID is required.
-                </small>
-              </div>
-              <div class="form-actions">
-                <p-button type="submit" label="Submit" icon="pi pi-check">
-                </p-button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-6">
-    <div class="json-response-card">
-      <div class="json-header">
-        <div>
-          <span class="json-status">
-            <i class="pi pi-check-circle"></i>
-            Response
-          </span>
-          <span class="status-code">200 OK</span>
-        </div>
-
-        <p-button
-          label="Copy"
-          icon="pi pi-copy"
-          severity="secondary"
-          size="small"
-          (onClick)="copyResponse()"
-        ></p-button>
-      </div>
-
-      <div class="json-body">
-        <pre
-          *ngIf="apiResponse != null"
-        ><code>{{ apiResponse | json }}</code></pre>
-      </div>
-    </div>
-  </div>
-</div>
- -->
-
-
 <div class="api-explorer">
 
+  <!-- ===================================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ===================================================== -->
+
   <div class="page-header">
+
     <div class="page-header-content">
+
       <div class="page-icon">
         <i class="pi pi-code"></i>
       </div>
 
       <div>
-        <h2>Patient API Explorer</h2>
+
+        <h2>
+          Patient API Explorer
+        </h2>
+
         <p>
-          Select an API, provide the required parameters and execute the request.
+          Select an API, provide the required parameters
+          and execute the request.
         </p>
+
       </div>
+
     </div>
+
   </div>
 
 
+
+  <!-- ===================================================== -->
+  <!-- AVAILABLE APIs -->
+  <!-- ===================================================== -->
 
   <div class="api-selection-card">
 
     <div class="section-header">
+
       <div>
+
         <h3>
+
           <i class="pi pi-list"></i>
+
           Available APIs
+
         </h3>
 
-        <p>Select an API to view its parameters.</p>
+        <p>
+          Select an API to configure the request.
+        </p>
+
       </div>
 
       <span class="api-count">
-        {{ getApis.length }} APIs
+
+        {{
+          getApis.length +
+          postApis.length +
+          multipartApis.length
+        }}
+
+        APIs
+
       </span>
+
     </div>
 
 
-    <div class="api-list">
 
-      <button
-        type="button"
-        class="api-item"
-        *ngFor="let api of getApis"
-        [class.active]="selectedApi?.name === api.name"
-        (click)="selectApi(api)"
-      >
+    <!-- ================================================= -->
+    <!-- GET APIs -->
+    <!-- ================================================= -->
 
-        <span class="api-method get">
-          GET
-        </span>
+    <div
+      class="api-category"
+      *ngIf="getApis.length > 0"
+    >
 
-        <span class="api-info">
-          <strong>{{ api.name }}</strong>
+      <div class="category-title">
 
-          <small *ngIf="api.description">
-            {{ api.description }}
-          </small>
-        </span>
+        <i class="pi pi-download"></i>
 
-        <i class="pi pi-chevron-right api-arrow"></i>
+        GET APIs
 
-      </button>
+      </div>
+
+
+      <div class="api-list">
+
+        <button
+          type="button"
+          class="api-item"
+
+          *ngFor="let api of getApis"
+
+          
+
+          (click)="selectApi(api)"
+        >
+
+          <span class="api-method get">
+            GET
+          </span>
+
+
+          <span class="api-info">
+
+            <strong>
+              {{ api.name }}
+            </strong>
+
+            <small
+              *ngIf="api.description"
+            >
+              {{ api.description }}
+            </small>
+
+          </span>
+
+
+          <i
+            class="pi pi-chevron-right api-arrow"
+          ></i>
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- POST APIs -->
+    <!-- ================================================= -->
+
+    <div
+      class="api-category"
+      *ngIf="postApis.length > 0"
+    >
+
+      <div class="category-title">
+
+        <i class="pi pi-send"></i>
+
+        POST APIs
+
+      </div>
+
+
+      <div class="api-list">
+
+        <button
+          type="button"
+          class="api-item"
+
+          *ngFor="let api of postApis"
+
+          [class.active]="
+            selectedPostApi?.id === api.id
+          "
+
+          (click)="selectPostApi(api)"
+        >
+
+          <span class="api-method post">
+            POST
+          </span>
+
+
+          <span class="api-info">
+
+            <strong>
+              {{ api.name }}
+            </strong>
+
+            <small
+              *ngIf="api.description"
+            >
+              {{ api.description }}
+            </small>
+
+          </span>
+
+
+          <i
+            class="pi pi-chevron-right api-arrow"
+          ></i>
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ================================================= -->
+    <!-- MULTIPART APIs -->
+    <!-- ================================================= -->
+
+    <div
+      class="api-category"
+
+      *ngIf="multipartApis.length > 0"
+    >
+
+      <div class="category-title">
+
+        <i class="pi pi-upload"></i>
+
+        Multipart APIs
+
+      </div>
+
+
+      <div class="api-list">
+
+        <button
+          type="button"
+          class="api-item"
+
+          *ngFor="let api of multipartApis"
+
+          [class.active]="
+            selectedMultipartApi?.id === api.id
+          "
+
+          (click)="selectMultipartApi(api)"
+        >
+
+          <span class="api-method post">
+            POST
+          </span>
+
+
+          <span class="api-info">
+
+            <strong>
+              {{ api.name }}
+            </strong>
+
+            <small
+              *ngIf="api.description"
+            >
+              {{ api.description }}
+            </small>
+
+          </span>
+
+
+          <i
+            class="pi pi-chevron-right api-arrow"
+          ></i>
+
+        </button>
+
+      </div>
 
     </div>
 
   </div>
 
 
+
+  <!-- ===================================================== -->
+  <!-- GET WORKSPACE -->
+  <!-- ===================================================== -->
 
   <div
     class="api-workspace"
     *ngIf="selectedApi"
   >
 
+    <!-- REQUEST -->
 
     <div class="request-panel">
 
@@ -456,15 +285,26 @@
         <div class="panel-title">
 
           <span class="panel-icon request-icon">
+
             <i class="pi pi-send"></i>
+
           </span>
 
+
           <div>
-            <h3>Request</h3>
-            <span>Configure API parameters</span>
+
+            <h3>
+              Request
+            </h3>
+
+            <span>
+              Configure API parameters
+            </span>
+
           </div>
 
         </div>
+
 
         <span class="method-badge get">
           GET
@@ -473,6 +313,8 @@
       </div>
 
 
+
+      <!-- ENDPOINT -->
 
       <div class="endpoint-box">
 
@@ -488,28 +330,39 @@
 
 
 
+      <!-- DESCRIPTION -->
+
       <div
         class="api-description"
         *ngIf="selectedApi.description"
       >
+
         <i class="pi pi-info-circle"></i>
 
         <span>
           {{ selectedApi.description }}
         </span>
+
       </div>
 
 
+
+      <!-- PARAMETERS -->
 
       <div class="parameters-section">
 
         <div class="parameters-header">
 
           <div>
-            <h4>Parameters</h4>
+
+            <h4>
+              Parameters
+            </h4>
+
             <span>
               Enter the values required by this API.
             </span>
+
           </div>
 
           <i class="pi pi-sliders-h"></i>
@@ -517,12 +370,19 @@
         </div>
 
 
+
         <div
           class="form-group"
-          *ngFor="let parameter of selectedApi.parameters"
+
+          *ngFor="
+            let parameter
+            of selectedApi.parameters
+          "
         >
 
-          <label [for]="parameter.name">
+          <label
+            [for]="parameter.name"
+          >
 
             {{ parameter.label }}
 
@@ -542,23 +402,574 @@
 
             <input
               pInputText
+
               [id]="parameter.name"
+
               type="text"
+
               [placeholder]="
-                parameter.placeholder || 'Enter ' + parameter.label
+                parameter.placeholder ||
+                'Enter ' + parameter.label
               "
-              [(ngModel)]="apiParams[parameter.name]"
+
+              [(ngModel)]="
+                apiParams[parameter.name]
+              "
+
+              class="full-width"
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- ACTIONS -->
+
+      <div class="request-actions">
+
+        <p-button
+          label="Execute Request"
+          icon="pi pi-play"
+
+          [loading]="apiLoading"
+
+          (onClick)="executeApi()"
+        >
+        </p-button>
+
+
+        <button
+          type="button"
+          class="clear-button"
+
+          (click)="clearRequest()"
+        >
+
+          <i class="pi pi-refresh"></i>
+
+          Clear
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- RESPONSE -->
+
+    <ng-container>
+      <ng-container
+        *ngTemplateOutlet="responsePanel"
+      ></ng-container>
+    </ng-container>
+
+  </div>
+
+
+
+  <!-- ===================================================== -->
+  <!-- POST WORKSPACE -->
+  <!-- ===================================================== -->
+
+  <div
+    class="api-workspace"
+    *ngIf="selectedPostApi"
+  >
+
+    <!-- REQUEST -->
+
+    <div class="request-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-title">
+
+          <span class="panel-icon request-icon">
+
+            <i class="pi pi-send"></i>
+
+          </span>
+
+
+          <div>
+
+            <h3>
+              {{ selectedPostApi.name }}
+            </h3>
+
+            <span>
+              Configure request body
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <span class="method-badge post">
+          POST
+        </span>
+
+      </div>
+
+
+
+      <!-- ENDPOINT -->
+
+      <div class="endpoint-box">
+
+        <span class="endpoint-method">
+          POST
+        </span>
+
+        <code>
+          {{ selectedPostApi.url }}
+        </code>
+
+      </div>
+
+
+
+      <!-- DESCRIPTION -->
+
+      <div
+        class="api-description"
+
+        *ngIf="
+          selectedPostApi.description
+        "
+      >
+
+        <i class="pi pi-info-circle"></i>
+
+        <span>
+          {{ selectedPostApi.description }}
+        </span>
+
+      </div>
+
+
+
+      <!-- DYNAMIC FIELDS -->
+
+      <div class="parameters-section">
+
+        <div class="parameters-header">
+
+          <div>
+
+            <h4>
+              Request Body
+            </h4>
+
+            <span>
+              Enter the values required by this API.
+            </span>
+
+          </div>
+
+          <i class="pi pi-file-edit"></i>
+
+        </div>
+
+
+
+        <div
+          class="form-group"
+
+          *ngFor="
+            let field
+            of selectedPostApi.fields
+          "
+        >
+
+          <label
+            [for]="field.name"
+          >
+
+            {{ field.label }}
+
+            <span
+              *ngIf="field.required"
+              class="required"
+            >
+              *
+            </span>
+
+          </label>
+
+
+          <!-- TEXT / NUMBER / DATE -->
+
+          <div
+            class="input-wrapper"
+
+            *ngIf="
+              field.type === 'text' ||
+              field.type === 'number' ||
+              field.type === 'date'
+            "
+          >
+
+            <i class="pi pi-pencil"></i>
+
+            <input
+              pInputText
+
+              [id]="field.name"
+
+              [type]="field.type"
+
+              [placeholder]="
+                field.placeholder ||
+                'Enter ' + field.label
+              "
+
+              [(ngModel)]="
+                postBody[field.name]
+              "
+
               class="full-width"
             />
 
           </div>
 
 
-          <small
-            class="parameter-location"
-          >
-            <i class="pi pi-link"></i>
+          <!-- TEXTAREA -->
 
+          <textarea
+            *ngIf="
+              field.type === 'textarea'
+            "
+
+            pInputText
+
+            [id]="field.name"
+
+            [placeholder]="
+              field.placeholder ||
+              'Enter ' + field.label
+            "
+
+            [(ngModel)]="
+              postBody[field.name]
+            "
+
+            rows="4"
+
+            class="full-width"
+          >
+          </textarea>
+
+
+          <!-- BOOLEAN -->
+
+          <input
+            *ngIf="
+              field.type === 'boolean'
+            "
+
+            type="checkbox"
+
+            [(ngModel)]="
+              postBody[field.name]
+            "
+          />
+
+        </div>
+
+      </div>
+
+
+
+      <!-- ACTIONS -->
+
+      <div class="request-actions">
+
+        <p-button
+          label="Execute Request"
+          icon="pi pi-play"
+
+          [loading]="apiLoading"
+
+          (onClick)="executePostApi()"
+        >
+        </p-button>
+
+
+        <button
+          type="button"
+          class="clear-button"
+
+          (click)="clearRequest()"
+        >
+
+          <i class="pi pi-refresh"></i>
+
+          Clear
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- RESPONSE -->
+
+    <ng-container>
+      <ng-container
+        *ngTemplateOutlet="responsePanel"
+      ></ng-container>
+    </ng-container>
+
+  </div>
+
+
+
+  <!-- ===================================================== -->
+  <!-- MULTIPART WORKSPACE -->
+  <!-- ===================================================== -->
+
+  <div
+    class="api-workspace"
+
+    *ngIf="selectedMultipartApi"
+  >
+
+    <!-- REQUEST -->
+
+    <div class="request-panel">
+
+      <div class="panel-header">
+
+        <div class="panel-title">
+
+          <span class="panel-icon request-icon">
+
+            <i class="pi pi-upload"></i>
+
+          </span>
+
+
+          <div>
+
+            <h3>
+              {{ selectedMultipartApi.name }}
+            </h3>
+
+            <span>
+              Configure multipart request
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <span class="method-badge post">
+          POST
+        </span>
+
+      </div>
+
+
+
+      <!-- ENDPOINT -->
+
+      <div class="endpoint-box">
+
+        <span class="endpoint-method">
+          POST
+        </span>
+
+        <code>
+          {{ selectedMultipartApi.url }}
+        </code>
+
+      </div>
+
+
+
+      <!-- DESCRIPTION -->
+
+      <div
+        class="api-description"
+
+        *ngIf="
+          selectedMultipartApi.description
+        "
+      >
+
+        <i class="pi pi-info-circle"></i>
+
+        <span>
+          {{ selectedMultipartApi.description }}
+        </span>
+
+      </div>
+
+
+
+      <!-- DYNAMIC FIELDS -->
+
+      <div class="parameters-section">
+
+        <div class="parameters-header">
+
+          <div>
+
+            <h4>
+              Request Body
+            </h4>
+
+            <span>
+              Enter values and upload required documents.
+            </span>
+
+          </div>
+
+          <i class="pi pi-file-edit"></i>
+
+        </div>
+
+
+
+        <div
+          class="form-group"
+
+          *ngFor="
+            let field
+            of selectedMultipartApi.fields
+          "
+        >
+
+          <label
+            [for]="field.name"
+          >
+
+            {{ field.label }}
+
+            <span
+              *ngIf="field.required"
+              class="required"
+            >
+              *
+            </span>
+
+          </label>
+
+
+
+          <!-- TEXT FIELD -->
+
+          <div
+            class="input-wrapper"
+
+            *ngIf="
+              field.type === 'text'
+            "
+          >
+
+            <i class="pi pi-pencil"></i>
+
+            <input
+              pInputText
+
+              [id]="field.name"
+
+              type="text"
+
+              [placeholder]="
+                field.placeholder ||
+                'Enter ' + field.label
+              "
+
+              [(ngModel)]="
+                multipartValues[field.name]
+              "
+
+              class="full-width"
+            />
+
+          </div>
+
+
+
+          <!-- FILE -->
+
+          <div
+            class="upload-box"
+
+            *ngIf="
+              field.type === 'file'
+            "
+          >
+
+            <i class="pi pi-upload"></i>
+
+
+            <p-fileUpload
+
+              mode="basic"
+
+              chooseLabel="Choose File"
+
+              chooseIcon="pi pi-upload"
+
+              [accept]="
+                field.accept || ''
+              "
+
+              [maxFileSize]="
+                field.maxFileSize || 5000000
+              "
+
+              [auto]="false"
+
+              [customUpload]="true"
+
+              (onSelect)="
+                onFileSelect(
+                  $event,
+                  field.name
+                )
+              "
+
+              (onRemove)="
+                onFileRemove(
+                  field.name
+                )
+              "
+            >
+            </p-fileUpload>
+
+          </div>
+
+
+
+          <!-- SELECTED FILE -->
+
+          <small
+            *ngIf="
+              selectedFiles[field.name]
+            "
+
+            class="selected-file"
+          >
+
+            <i class="pi pi-file"></i>
+
+            {{
+              selectedFiles[field.name]?.name
+            }}
 
           </small>
 
@@ -568,23 +979,32 @@
 
 
 
+      <!-- ACTIONS -->
+
       <div class="request-actions">
 
         <p-button
-          label="Execute Request"
-          icon="pi pi-play"
+          label="Create"
+          icon="pi pi-check"
+
           [loading]="apiLoading"
-          (onClick)="executeApi()"
+
+          (onClick)="executeMultipartApi()"
         >
         </p-button>
+
 
         <button
           type="button"
           class="clear-button"
-          (click)="apiParams = {}"
+
+          (click)="clearRequest()"
         >
+
           <i class="pi pi-refresh"></i>
+
           Clear
+
         </button>
 
       </div>
@@ -593,6 +1013,82 @@
 
 
 
+    <!-- RESPONSE -->
+
+    <ng-container>
+      <ng-container
+        *ngTemplateOutlet="responsePanel"
+      ></ng-container>
+    </ng-container>
+
+  </div>
+
+
+
+  <!-- ===================================================== -->
+  <!-- REUSABLE CALLERS -->
+  <!-- ===================================================== -->
+
+  <app-api-caller
+
+    (apiResponse)="
+      onApiResponse($event)
+    "
+
+    (apiError)="
+      onApiError($event)
+    "
+
+    (loadingChange)="
+      onLoadingChange($event)
+    "
+  >
+  </app-api-caller>
+
+
+
+  <app-post-api-caller
+
+    (apiResponse)="
+      onPostApiResponse($event)
+    "
+
+    (apiError)="
+      onPostApiError($event)
+    "
+
+    (loadingChange)="
+      onPostLoadingChange($event)
+    "
+  >
+  </app-post-api-caller>
+
+
+
+  <app-multipart-api-caller
+
+    (apiResponse)="
+      onMultipartApiResponse($event)
+    "
+
+    (apiError)="
+      onMultipartApiError($event)
+    "
+
+    (loadingChange)="
+      onMultipartLoadingChange($event)
+    "
+  >
+  </app-multipart-api-caller> 
+
+
+
+  <!-- ===================================================== -->
+  <!-- COMMON RESPONSE PANEL -->
+  <!-- ===================================================== -->
+
+  <ng-template #responsePanel>
+
     <div class="response-panel">
 
       <div class="panel-header">
@@ -600,25 +1096,39 @@
         <div class="panel-title">
 
           <span class="panel-icon response-icon">
+
             <i class="pi pi-reply"></i>
+
           </span>
 
+
           <div>
-            <h3>Response</h3>
-            <span>API response data</span>
+
+            <h3>
+              Response
+            </h3>
+
+            <span>
+              API response data
+            </span>
+
           </div>
 
         </div>
+
 
 
         <div class="response-actions">
 
           <span
             class="status-code"
+
             [class.error]="apiError"
           >
+
             <i
               class="pi"
+
               [ngClass]="
                 apiError
                   ? 'pi-times-circle'
@@ -626,17 +1136,33 @@
               "
             ></i>
 
-            {{ apiError ? 'Error' : '200 OK' }}
+
+            {{
+              apiError
+                ? 'Error'
+                : '200 OK'
+            }}
+
           </span>
 
 
           <p-button
+
             label="Copy"
+
             icon="pi pi-copy"
+
             severity="secondary"
+
             size="small"
-            [disabled]="apiResponse == null"
-            (onClick)="copyResponse()"
+
+            [disabled]="
+              apiResponse == null
+            "
+
+            (onClick)="
+              copyResponse()
+            "
           >
           </p-button>
 
@@ -646,30 +1172,49 @@
 
 
 
+      <!-- RESPONSE BODY -->
+
       <div class="json-response">
+
+
+        <!-- EMPTY -->
 
         <div
           class="empty-response"
-          *ngIf="apiResponse == null && !apiLoading"
+
+          *ngIf="
+            apiResponse == null &&
+            !apiLoading &&
+            !apiError
+          "
         >
 
           <i class="pi pi-code"></i>
 
-          <h4>No response yet</h4>
+          <h4>
+            No response yet
+          </h4>
 
           <p>
-            Execute an API request to see the response here.
+            Execute an API request to see
+            the response here.
           </p>
 
         </div>
 
 
+
+        <!-- LOADING -->
+
         <div
           class="loading-response"
+
           *ngIf="apiLoading"
         >
 
-          <i class="pi pi-spin pi-spinner"></i>
+          <i
+            class="pi pi-spin pi-spinner"
+          ></i>
 
           <span>
             Calling API...
@@ -678,466 +1223,33 @@
         </div>
 
 
+
+        <!-- RESPONSE -->
+
         <pre
-          *ngIf="apiResponse != null && !apiLoading"
+          *ngIf="
+            apiResponse != null &&
+            !apiLoading
+          "
         ><code>{{ apiResponse | json }}</code></pre>
 
-      </div>
 
-    </div>
 
-  </div>
+        <!-- ERROR -->
 
+        <pre
+          class="error-response"
 
-
-<app-api-caller
-  (apiResponse)="onApiResponse($event)"
-  (apiError)="onApiError($event)"
-  (loadingChange)="onLoadingChange($event)"
->
-</app-api-caller>
-
-
-  <div class="module-section">
-
-    <div class="module-section-header">
-
-      <div>
-        <span class="section-eyebrow">
-          Patient Management
-        </span>
-
-        <h2>Patient Operations</h2>
-
-        <p>
-          Manage patient documents, diagnosis and procedures.
-        </p>
-      </div>
-
-    </div>
-
-
-    <div class="module-form-container">
-
-
-      <div
-        *ngIf="formType === 'create-patient'"
-        class="form-card"
-      >
-
-        <div class="form-header">
-
-          <div class="form-header-icon">
-            <i class="pi pi-user-plus"></i>
-          </div>
-
-          <div>
-            <h2>Patient Documents</h2>
-
-            <p>
-              Enter the ABHA ID and upload the required documents.
-            </p>
-          </div>
-
-        </div>
-
-
-        <form
-          [formGroup]="patientForm"
-          (ngSubmit)="onSubmit()"
-        >
-
-
-          <div class="form-group">
-
-            <label for="abhaId">
-              ABHA ID
-              <span class="required">*</span>
-            </label>
-
-            <input
-              id="abhaId"
-              type="text"
-              pInputText
-              formControlName="abhaId"
-              placeholder="Enter ABHA ID"
-              class="full-width"
-              [class.ng-invalid]="
-                patientForm.get('abhaId')?.invalid &&
-                patientForm.get('abhaId')?.touched
-              "
-            />
-
-            <small
-              class="error-message"
-              *ngIf="
-                patientForm.get('abhaId')?.hasError('required') &&
-                patientForm.get('abhaId')?.touched
-              "
-            >
-              ABHA ID is required.
-            </small>
-
-          </div>
-
-
-
-          <div class="documents-section">
-
-            <div class="section-title">
-
-              <div>
-                <h3>
-                  <i class="pi pi-file"></i>
-                  Upload Documents
-                </h3>
-
-                <p>
-                  Supported formats: PDF, JPG, PNG
-                </p>
-              </div>
-
-              <span class="file-limit">
-                Max 5 MB
-              </span>
-
-            </div>
-
-
-            <div class="file-grid">
-
-
-              <div class="file-group">
-
-                <label>
-                  Identity Document
-                  <span class="required">*</span>
-                </label>
-
-                <div class="upload-box">
-
-                  <i class="pi pi-id-card"></i>
-
-                  <p-fileUpload
-                    mode="basic"
-                    chooseLabel="Choose File"
-                    chooseIcon="pi pi-upload"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    [maxFileSize]="5000000"
-                    [auto]="false"
-                    [customUpload]="true"
-                    (onSelect)="
-                      onFileSelect($event, 'identityDocument')
-                    "
-                    (onRemove)="
-                      onFileRemove('identityDocument')
-                    "
-                  >
-                  </p-fileUpload>
-
-                </div>
-
-                <small
-                  *ngIf="selectedFiles.identityDocument"
-                  class="selected-file"
-                >
-                  <i class="pi pi-file"></i>
-                  {{ selectedFiles.identityDocument.name }}
-                </small>
-
-                <small
-                  *ngIf="
-                    patientForm.get('identityDocument')?.invalid &&
-                    patientForm.get('identityDocument')?.touched
-                  "
-                  class="error-message"
-                >
-                  Identity document is required.
-                </small>
-
-              </div>
-
-
-
-              <div class="file-group">
-
-                <label>
-                  Medical Report
-                  <span class="required">*</span>
-                </label>
-
-                <div class="upload-box">
-
-                  <i class="pi pi-file-medical"></i>
-
-                  <p-fileUpload
-                    mode="basic"
-                    chooseLabel="Choose File"
-                    chooseIcon="pi pi-upload"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    [maxFileSize]="5000000"
-                    [auto]="false"
-                    [customUpload]="true"
-                    (onSelect)="
-                      onFileSelect($event, 'medicalReport')
-                    "
-                    (onRemove)="
-                      onFileRemove('medicalReport')
-                    "
-                  >
-                  </p-fileUpload>
-
-                </div>
-
-                <small
-                  *ngIf="selectedFiles.medicalReport"
-                  class="selected-file"
-                >
-                  <i class="pi pi-file"></i>
-                  {{ selectedFiles.medicalReport.name }}
-                </small>
-
-                <small
-                  *ngIf="
-                    patientForm.get('medicalReport')?.invalid &&
-                    patientForm.get('medicalReport')?.touched
-                  "
-                  class="error-message"
-                >
-                  Medical report is required.
-                </small>
-
-              </div>
-
-
-
-              <div class="file-group">
-
-                <label>
-                  Other Document
-                  <span class="required">*</span>
-                </label>
-
-                <div class="upload-box">
-
-                  <i class="pi pi-folder-open"></i>
-
-                  <p-fileUpload
-                    mode="basic"
-                    chooseLabel="Choose File"
-                    chooseIcon="pi pi-upload"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    [maxFileSize]="5000000"
-                    [auto]="false"
-                    [customUpload]="true"
-                    (onSelect)="
-                      onFileSelect($event, 'otherDocument')
-                    "
-                    (onRemove)="
-                      onFileRemove('otherDocument')
-                    "
-                  >
-                  </p-fileUpload>
-
-                </div>
-
-                <small
-                  *ngIf="selectedFiles.otherDocument"
-                  class="selected-file"
-                >
-                  <i class="pi pi-file"></i>
-                  {{ selectedFiles.otherDocument.name }}
-                </small>
-
-                <small
-                  *ngIf="
-                    patientForm.get('otherDocument')?.invalid &&
-                    patientForm.get('otherDocument')?.touched
-                  "
-                  class="error-message"
-                >
-                  Document is required.
-                </small>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <div class="form-actions">
-
-            <p-button
-              type="submit"
-              label="Create Patient"
-              icon="pi pi-check"
-            >
-            </p-button>
-
-          </div>
-
-        </form>
-
-      </div>
-
-
-
-      <div
-        *ngIf="formType === 'create-diagnosis'"
-        class="form-card"
-      >
-
-        <div class="form-header">
-
-          <div class="form-header-icon">
-            <i class="pi pi-heart"></i>
-          </div>
-
-          <div>
-            <h2>Diagnosis</h2>
-
-            <p>
-              Enter the patient ID to create a diagnosis.
-            </p>
-          </div>
-
-        </div>
-
-
-        <form
-          [formGroup]="diagnosysForm"
-          (ngSubmit)="onSubmitDiagnosisForm()"
-        >
-
-          <div class="form-group">
-
-            <label for="diagnosisPatientId">
-              Patient ID
-              <span class="required">*</span>
-            </label>
-
-            <input
-              id="diagnosisPatientId"
-              type="text"
-              pInputText
-              formControlName="patientId"
-              placeholder="Enter Patient ID"
-              class="full-width"
-              [class.ng-invalid]="
-                diagnosysForm.get('patientId')?.invalid &&
-                diagnosysForm.get('patientId')?.touched
-              "
-            />
-
-            <small
-              class="error-message"
-              *ngIf="
-                diagnosysForm.get('patientId')?.hasError('required') &&
-                diagnosysForm.get('patientId')?.touched
-              "
-            >
-              Patient ID is required.
-            </small>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <p-button
-              type="submit"
-              label="Create Diagnosis"
-              icon="pi pi-check"
-            >
-            </p-button>
-
-          </div>
-
-        </form>
-
-      </div>
-
-
-
-      <div
-        *ngIf="formType === 'create-procedure'"
-        class="form-card"
-      >
-
-        <div class="form-header">
-
-          <div class="form-header-icon">
-            <i class="pi pi-cog"></i>
-          </div>
-
-          <div>
-            <h2>Procedure</h2>
-
-            <p>
-              Enter the patient ID to create a procedure.
-            </p>
-          </div>
-
-        </div>
-
-
-        <form
-          [formGroup]="procedureForm"
-          (ngSubmit)="onSubmitProcedureForm()"
-        >
-
-          <div class="form-group">
-
-            <label for="procedurePatientId">
-              Patient ID
-              <span class="required">*</span>
-            </label>
-
-            <input
-              id="procedurePatientId"
-              type="text"
-              pInputText
-              formControlName="patientId"
-              placeholder="Enter Patient ID"
-              class="full-width"
-              [class.ng-invalid]="
-                procedureForm.get('patientId')?.invalid &&
-                procedureForm.get('patientId')?.touched
-              "
-            />
-
-            <small
-              class="error-message"
-              *ngIf="
-                procedureForm.get('patientId')?.hasError('required') &&
-                procedureForm.get('patientId')?.touched
-              "
-            >
-              Patient ID is required.
-            </small>
-
-          </div>
-
-
-          <div class="form-actions">
-
-            <p-button
-              type="submit"
-              label="Create Procedure"
-              icon="pi pi-check"
-            >
-            </p-button>
-
-          </div>
-
-        </form>
+          *ngIf="
+            apiError &&
+            !apiLoading
+          "
+        ><code>{{ apiError | json }}</code></pre>
 
       </div>
 
     </div>
 
-  </div>
+  </ng-template>
 
 </div>
