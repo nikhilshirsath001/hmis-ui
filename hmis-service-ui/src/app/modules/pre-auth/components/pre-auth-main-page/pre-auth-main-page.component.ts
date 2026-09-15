@@ -8,6 +8,7 @@ import { GetApiDefinition } from '../../../../models/get-api-definition';
 import { PRE_AUTH_GET_APIS } from '../../../../constants/apis-configs/preAuth-api.config';
 import { EligiblityService } from '../../../eligiblity/services/eligiblity.service';
 import { ActivatedRoute } from '@angular/router';
+import { PreAuthService } from '../../services/pre-auth.service';
 
 @Component({
   selector: 'app-pre-auth-main-page',
@@ -39,7 +40,7 @@ export class PreAuthMainPageComponent {
 
   constructor(
     private fb: FormBuilder,
-    private eligiblityService: EligiblityService,
+    private preAuthService: PreAuthService,
     private route: ActivatedRoute,
   ) {
     this.apiCallForm = this.fb.group({ abhaId: ['', [Validators.required]] });
@@ -156,4 +157,22 @@ export class PreAuthMainPageComponent {
       console.log('Response copied');
     });
   }
+
+
+sendBackApi(): void {
+  const data = {
+    patientId: this.apiParams['patientId'],
+    payload: this.apiResponse.data
+  };
+
+  this.preAuthService.sendBackApi(data).subscribe({
+    next: (res: any) => {
+      this.apiResponse = res.data;
+    },
+    error: (error) => {
+      console.error('Send back API error:', error);
+    }
+  });
+}
+
 }
